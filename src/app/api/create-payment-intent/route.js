@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 export async function POST(req) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock_key_for_build");
   try {
     const body = await req.json();
 
@@ -25,7 +24,7 @@ export async function POST(req) {
     // Create Stripe PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount, // in cents
-      currency: "usd",
+      currency: "ngn",
       metadata: { parcelName, senderName },
     });
 

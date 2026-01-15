@@ -46,7 +46,7 @@ export default function Navbar() {
                 </div>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
-                Transify
+                Mk-Global Express
               </span>
             </Link>
 

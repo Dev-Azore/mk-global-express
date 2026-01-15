@@ -5,21 +5,21 @@ import { MapPin, Package, Clock, CheckCircle2 } from "lucide-react";
 
 export default function CoverageSection() {
     const coverageStats = [
-        { icon: <MapPin className="w-6 h-6" />, label: "Districts", value: "64" },
+        { icon: <MapPin className="w-6 h-6" />, label: "States Covered", value: "36+1" },
         { icon: <Package className="w-6 h-6" />, label: "Daily Deliveries", value: "5000+" },
         { icon: <Clock className="w-6 h-6" />, label: "Avg. Delivery Time", value: "24-48h" },
         { icon: <CheckCircle2 className="w-6 h-6" />, label: "Success Rate", value: "99.5%" },
     ];
 
     const majorCities = [
-        { name: "Dhaka", position: "top-[48%] left-[52%]" },
-        { name: "Chittagong", position: "top-[58%] right-[22%]" },
-        { name: "Sylhet", position: "top-[28%] right-[20%]" },
-        { name: "Rajshahi", position: "top-[40%] left-[20%]" },
-        { name: "Khulna", position: "bottom-[32%] left-[25%]" },
-        { name: "Barisal", position: "bottom-[28%] left-[42%]" },
-        { name: "Rangpur", position: "top-[20%] left-[30%]" },
-        { name: "Mymensingh", position: "top-[35%] left-[45%]" },
+        { name: "Kano", position: "top-[20%] left-[45%]" },
+        { name: "Lagos", position: "bottom-[20%] left-[15%]" },
+        { name: "Abuja", position: "top-[45%] left-[45%]" },
+        { name: "Port Harcourt", position: "bottom-[15%] left-[45%]" },
+        { name: "Kaduna", position: "top-[30%] left-[40%]" },
+        { name: "Ibadan", position: "bottom-[25%] left-[15%]" },
+        { name: "Maiduguri", position: "top-[15%] right-[15%]" },
+        { name: "Sokoto", position: "top-[10%] left-[15%]" },
     ];
 
     return (
@@ -43,7 +43,7 @@ export default function CoverageSection() {
                             </span>
                         </h2>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                            Delivering excellence across all 64 districts of Bangladesh. From bustling cities to remote villages,
+                            Delivering excellence across all 36 states of Nigeria. From bustling cities to remote villages,
                             we ensure your parcels reach every corner of the nation.
                         </p>
                     </div>
@@ -57,8 +57,8 @@ export default function CoverageSection() {
                                 <div className="relative w-full aspect-square max-w-lg mx-auto">
                                     {/* Bangladesh Map Image */}
                                     <Image
-                                        src="/bangladesh-map.png"
-                                        alt="Bangladesh Coverage Map"
+                                        src="/kano_map.png"
+                                        alt="Kano State Coverage Map"
                                         width={500}
                                         height={500}
                                         className="w-full h-full object-contain opacity-90"

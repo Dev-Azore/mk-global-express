@@ -22,12 +22,12 @@ export default function AboutUsSection() {
           <div className="space-y-6 order-1 lg:order-2">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900">
               Built for{" "}
-              <span className="text-red-600">Bangladeshi Businesses</span>
+              <span className="text-red-600">Nigerian Businesses</span>
             </h2>
 
             <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
               We help online and offline businesses deliver parcels to customers
-              in every district of Bangladesh. With a nationwide rider network,
+              in every state of Nigeria. With a nationwide rider network,
               smart routing and a merchant‑first mindset, we focus on keeping
               your customers happy and your operations smooth.
             </p>
@@ -37,27 +37,27 @@ export default function AboutUsSection() {
               <div className="flex items-start space-x-3">
                 <ShieldCheck className="w-7 h-7 text-red-600 flex-shrink-0" />
                 <div>
-                    <h4 className="font-semibold text-gray-900">
-                      Trusted & Secure
-                    </h4>
+                  <h4 className="font-semibold text-gray-900">
+                    Trusted & Secure
+                  </h4>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
                 <Truck className="w-7 h-7 text-red-600 flex-shrink-0" />
                 <div>
-                    <h4 className="font-semibold text-gray-900">
-                      Nationwide Delivery
-                    </h4>
+                  <h4 className="font-semibold text-gray-900">
+                    Nationwide Delivery
+                  </h4>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
                 <HeartHandshake className="w-7 h-7 text-red-600 flex-shrink-0" />
                 <div>
-                    <h4 className="font-semibold text-gray-900">
-                      Merchant & Customer First
-                    </h4>
+                  <h4 className="font-semibold text-gray-900">
+                    Merchant & Customer First
+                  </h4>
                 </div>
               </div>
             </div>

@@ -134,7 +134,7 @@ const RegisterPage = () => {
           <div className="text-center lg:text-left">
             <h2 className="text-4xl font-bold text-gray-900 tracking-tight">Create Account</h2>
             <p className="mt-2 text-gray-600">
-              Join Transify today for free
+              Join Mk-Global Express today for free
             </p>
           </div>
 

@@ -243,7 +243,7 @@ const Sidebar = ({ onClick, collapsed = false }) => {
       {/* <div className="h-16 flex items-center justify-center border-b border-gray-50">
         {!collapsed ? (
           <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
-            Transify Panel
+            Mk-Global Panel
           </span>
         ) : (
           <ShieldCheck className="text-red-600" size={24} />

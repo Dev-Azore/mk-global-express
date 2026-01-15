@@ -1,5 +1,5 @@
 "use client";
-import { Facebook, Twitter, Instagram, Linkedin, ArrowUp, Mail, CreditCard, DollarSign, Smartphone } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, ArrowUp, Mail, CreditCard, DollarSign, Smartphone, MapPin, Phone } from "lucide-react";
 import { FaCcVisa, FaCcMastercard, FaCcPaypal } from "react-icons/fa";
 import Container from "@/Components/Shared/Container/Container";
 
@@ -23,12 +23,16 @@ export default function Footer() {
             {/* Brand & Description */}
             <div className="space-y-6 md:col-span-2">
               <h2 className="text-4xl font-extrabold text-red-500">
-                Transify
+                Mk-Global Express Logistics
               </h2>
               <p className="text-base text-gray-300 dark:text-gray-400 leading-relaxed">
                 Fast, secure, and reliable courier services. Delivering parcels
                 with care worldwide. Experience the future of logistics with our cutting-edge technology.
               </p>
+              <div className="text-gray-300 dark:text-gray-400 space-y-2">
+                <p className="flex items-center gap-2"><MapPin size={16} className="text-red-500" /> Rano, Headquarters, Kano State, Nigeria.</p>
+                <p className="flex items-center gap-2"><Phone size={16} className="text-red-500" /> +2347043051284</p>
+              </div>
 
               {/* Newsletter Signup */}
               <div className="space-y-3">
@@ -153,7 +157,7 @@ export default function Footer() {
             <Container>
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-sm text-gray-300 dark:text-gray-400 text-center md:text-left">
-                  © {new Date().getFullYear()} <span className="font-semibold text-white">Transify</span>. All rights reserved.
+                  © {new Date().getFullYear()} <span className="font-semibold text-white">Mk-Global Express Logistics</span>. All rights reserved.
                 </p>
                 <div className="flex gap-6 text-sm text-gray-400 dark:text-gray-500">
                   <a href="#" className="hover:text-red-400 transition-colors">Privacy</a>

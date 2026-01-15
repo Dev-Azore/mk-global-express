@@ -4,16 +4,17 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import axiosInstance from "../../Lib/axiosInstance.js";
 import toast from "react-hot-toast";
 
-export default function CheckoutForm({ formData, bookingId, onSuccess }) {
+export default function CheckoutForm({ formData, bookingId, onSuccess, amount }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
 
-  // Amount calculate based on type
+  // Amount calculate based on type or use passed amount
   const getAmount = () => {
-    if (formData.type === "Document") return 500 * 100; // 500 USD in cents
+    if (amount) return amount;
+    if (formData.type === "Document") return 500000; // 5000 NGN in kobo
     const weight = parseFloat(formData.parcelWeight) || 0;
-    return weight * 300 * 100; // 300 USD per kg in cents
+    return weight * 200000; // 2000 NGN per kg in kobo
   };
 
   const handlePayment = async (e) => {
@@ -21,15 +22,7 @@ export default function CheckoutForm({ formData, bookingId, onSuccess }) {
     setLoading(true);
 
     try {
-      let paymentAmount = 0;
-
-      // Calculate amount
-      if (formData.type === "Document") {
-        paymentAmount = 500 * 100; // $500 → 50000 cents
-      } else {
-        // Non-document: amount based on weight
-        paymentAmount = (formData.parcelWeight || 1) * 300 * 100; // 300 per kg
-      }
+      let paymentAmount = getAmount();
 
       // Call backend
       const res = await fetch("/api/create-payment-intent", {
@@ -64,7 +57,7 @@ export default function CheckoutForm({ formData, bookingId, onSuccess }) {
           ...formData,
           status: "paid",
           transactionId: result.paymentIntent.id,
-          amount: paymentAmount / 100, // save in USD
+          amount: paymentAmount / 100, // save in NGN
         });
         if (onSuccess) onSuccess();
       }
@@ -122,7 +115,7 @@ export default function CheckoutForm({ formData, bookingId, onSuccess }) {
       >
         {loading
           ? "Processing Payment..."
-          : `Pay $${(getAmount() / 100).toFixed(2)} USD`}
+          : `Pay ₦${(getAmount() / 100).toLocaleString()}`}
       </button>
     </form>
   );

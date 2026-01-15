@@ -27,7 +27,7 @@ export default function CourierHeroSection() {
                 </h1>
 
                 <p className="text-xl md:text-2xl text-gray-600 leading-relaxed font-light max-w-xl">
-                  Swift, secure, and seamless delivery solutions tailored for modern Bangladesh.
+                  Swift, secure, and seamless delivery solutions tailored for modern Nigeria.
                 </p>
               </div>
 
@@ -54,8 +54,8 @@ export default function CourierHeroSection() {
           <div className="relative flex items-center justify-center h-full">
             <div className="relative w-full h-full flex items-center justify-center">
               <Image
-                src="/bangladesh-map.png"
-                alt="Bangladesh Map"
+                src="/kano_map.png"
+                alt="Kano State Map"
                 width={350}
                 height={350}
                 className="w-full h-auto max-w-sm object-contain"

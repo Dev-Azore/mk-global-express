@@ -4,8 +4,8 @@ import Container from "../../Components/Shared/Container/Container";
 
 export default function StatsSection() {
   const stats = [
-    { label: "Districts Covered", value: 64, suffix: "+" },
-    { label: "Upazilas Served", value: 490, suffix: "+" },
+    { label: "States Covered", value: 37, suffix: "+" },
+    { label: "LGAs Served", value: 774, suffix: "+" },
     { label: "Parcels Delivered / Day", value: 50, suffix: "K+" },
     { label: "Merchants Trust Us", value: 10, suffix: "K+" },
   ];

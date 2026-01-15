@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const collection = await dbConnect(collectionNamesObj.bookingParcelsCollection);

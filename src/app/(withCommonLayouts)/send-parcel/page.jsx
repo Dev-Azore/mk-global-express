@@ -44,11 +44,11 @@ export default function SendParcel() {
   };
 
   const calculateAmount = () => {
-    // Document = $10, Not-Document = $20 per KG
-    if (formData.type === "Document") return 1000; // cents: $10
+    // Document = ₦5000, Not-Document = ₦2000 per KG
+    if (formData.type === "Document") return 500000; // kobo: ₦5000
     const weight = parseInt(formData.parcelWeight);
     if (!weight || weight <= 0) return 0;
-    return weight * 2000; // cents: $20 per kg
+    return weight * 200000; // kobo: ₦2000 per kg
   };
 
   const handleSubmit = (e) => {
@@ -169,11 +169,12 @@ export default function SendParcel() {
                     onChange={handleChange}
                     className="w-full outline-none"
                   >
-                    <option value="">Select Sender District</option>
-                    <option value="dhaka">Dhaka</option>
-                    <option value="sylhet">Sylhet</option>
-                    <option value="chittagong">Chittagong</option>
-                    <option value="rajshahi">Rajshahi</option>
+                    <option value="">Select Sender State</option>
+                    <option value="kano">Kano</option>
+                    <option value="lagos">Lagos</option>
+                    <option value="abuja">Abuja</option>
+                    <option value="rivers">Rivers</option>
+                    <option value="kaduna">Kaduna</option>
                   </select>
                 </div>
                 <div className="flex items-center border rounded-xl px-3 py-2">
@@ -232,11 +233,12 @@ export default function SendParcel() {
                     onChange={handleChange}
                     className="w-full outline-none"
                   >
-                    <option value="">Select Receiver District</option>
-                    <option value="dhaka">Dhaka</option>
-                    <option value="sylhet">Sylhet</option>
-                    <option value="chittagong">Chittagong</option>
-                    <option value="rajshahi">Rajshahi</option>
+                    <option value="">Select Receiver State</option>
+                    <option value="kano">Kano</option>
+                    <option value="lagos">Lagos</option>
+                    <option value="abuja">Abuja</option>
+                    <option value="rivers">Rivers</option>
+                    <option value="kaduna">Kaduna</option>
                   </select>
                 </div>
                 <div className="flex items-center border rounded-xl px-3 py-2">

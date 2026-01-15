@@ -42,12 +42,12 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center justify-between px-4 py-4 border-b border-red-900/40">
             <div className="flex items-center gap-2">
               <Link href="/" className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-500 text-white text-sm font-bold shadow-lg">
-                TF
+                MK
               </Link>
               {!collapsed && (
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold tracking-wide">
-                    Transify Panel
+                    Mk-Global Panel
                   </span>
                   <span className="text-[11px] text-gray-300/80">
                     Smart delivery dashboard
@@ -81,12 +81,12 @@ export default function DashboardLayout({ children }) {
               <span className="font-semibold text-gray-800">Dashboard</span>
             </div>
           </div>
-          
+
           {/* Desktop Topbar */}
           <div className="hidden md:block">
             <Topbar />
           </div>
-          
+
           <div className="w-full">{children}</div>
         </div>
       </div>

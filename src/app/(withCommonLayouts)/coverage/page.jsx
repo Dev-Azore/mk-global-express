@@ -8,70 +8,58 @@ const CoveragePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [activeTab, setActiveTab] = useState('all'); // all, dhaka, chittagong, etc.
+  const [activeTab, setActiveTab] = useState('all'); // all, northwest, southwest, etc.
 
-  // All 64 districts organized by division
+  // Major Cities and States in Nigeria
   const districts = [
-    // Dhaka Division
-    { name: 'Dhaka', division: 'Dhaka', position: 'top-[48%] left-[47%]', deliveryTime: '24h', coverage: '100%' },
-    { name: 'Gazipur', division: 'Dhaka', position: 'top-[44%] left-[48%]', deliveryTime: '24h', coverage: '100%' },
-    { name: 'Narayanganj', division: 'Dhaka', position: 'top-[50%] left-[48%]', deliveryTime: '24h', coverage: '100%' },
-    { name: 'Tangail', division: 'Dhaka', position: 'top-[40%] left-[46%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Kishoreganj', division: 'Dhaka', position: 'top-[42%] left-[52%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Manikganj', division: 'Dhaka', position: 'top-[48%] left-[44%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Munshiganj', division: 'Dhaka', position: 'top-[52%] left-[46%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Narsingdi', division: 'Dhaka', position: 'top-[48%] left-[50%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Faridpur', division: 'Dhaka', position: 'top-[55%] left-[40%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Gopalganj', division: 'Dhaka', position: 'top-[60%] left-[38%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Madaripur', division: 'Dhaka', position: 'top-[58%] left-[42%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Rajbari', division: 'Dhaka', position: 'top-[52%] left-[40%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Shariatpur', division: 'Dhaka', position: 'top-[57%] left-[44%]', deliveryTime: '48-72h', coverage: '95%' },
+    // North West
+    { name: 'Kano', division: 'North West', position: 'top-[20%] left-[45%]', deliveryTime: '24h', coverage: '100%' },
+    { name: 'Kaduna', division: 'North West', position: 'top-[30%] left-[40%]', deliveryTime: '24h', coverage: '100%' },
+    { name: 'Sokoto', division: 'North West', position: 'top-[10%] left-[15%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Katsina', division: 'North West', position: 'top-[15%] left-[35%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Kebbi', division: 'North West', position: 'top-[18%] left-[10%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Zamfara', division: 'North West', position: 'top-[22%] left-[20%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Jigawa', division: 'North West', position: 'top-[18%] left-[50%]', deliveryTime: '48-72h', coverage: '95%' },
 
-    // Chittagong Division  
-    { name: 'Chittagong', division: 'Chittagong', position: 'top-[58%] right-[18%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: "Cox's Bazar", division: 'Chittagong', position: 'bottom-[12%] right-[8%]', deliveryTime: '48-72h', coverage: '100%' },
-    { name: 'Comilla', division: 'Chittagong', position: 'top-[55%] left-[55%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Feni', division: 'Chittagong', position: 'top-[60%] right-[25%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Brahmanbaria', division: 'Chittagong', position: 'top-[52%] left-[54%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Rangamati', division: 'Chittagong', position: 'bottom-[28%] right-[15%]', deliveryTime: '72-96h', coverage: '90%' },
-    { name: 'Khagrachhari', division: 'Chittagong', position: 'bottom-[25%] right-[18%]', deliveryTime: '72-96h', coverage: '90%' },
-    { name: 'Bandarban', division: 'Chittagong', position: 'bottom-[18%] right-[22%]', deliveryTime: '72-96h', coverage: '85%' },
-    { name: 'Noakhali', division: 'Chittagong', position: 'top-[63%] right-[22%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Lakshmipur', division: 'Chittagong', position: 'top-[65%] right-[26%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Chandpur', division: 'Chittagong', position: 'top-[58%] left-[50%]', deliveryTime: '48-72h', coverage: '95%' },
+    // North Central
+    { name: 'Abuja (FCT)', division: 'North Central', position: 'top-[45%] left-[45%]', deliveryTime: '24h', coverage: '100%' },
+    { name: 'Niger', division: 'North Central', position: 'top-[40%] left-[30%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Kwara', division: 'North Central', position: 'center left-[20%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Kogi', division: 'North Central', position: 'bottom-[45%] left-[40%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Plateau', division: 'North Central', position: 'top-[42%] right-[40%]', deliveryTime: '24-48h', coverage: '95%' },
+    { name: 'Benue', division: 'North Central', position: 'bottom-[40%] right-[35%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Nasarawa', division: 'North Central', position: 'top-[48%] left-[50%]', deliveryTime: '24-48h', coverage: '95%' },
 
-    // Rajshahi Division
-    { name: 'Rajshahi', division: 'Rajshahi', position: 'top-[35%] left-[28%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Bogra', division: 'Rajshahi', position: 'top-[30%] left-[35%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Pabna', division: 'Rajshahi', position: 'top-[38%] left-[38%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Sirajganj', division: 'Rajshahi', position: 'top-[40%] left-[40%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Natore', division: 'Rajshahi', position: 'top-[34%] left-[32%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Naogaon', division: 'Rajshahi', position: 'top-[28%] left-[30%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Chapainawabganj', division: 'Rajshahi', position: 'top-[35%] left-[24%]', deliveryTime: '72-96h', coverage: '90%' },
-    { name: 'Joypurhat', division: 'Rajshahi', position: 'top-[26%] left-[33%]', deliveryTime: '72-96h', coverage: '90%' },
+    // South West
+    { name: 'Lagos', division: 'South West', position: 'bottom-[20%] left-[15%]', deliveryTime: '24h', coverage: '100%' },
+    { name: 'Ibadan (Oyo)', division: 'South West', position: 'bottom-[25%] left-[18%]', deliveryTime: '24h', coverage: '100%' },
+    { name: 'Ogun', division: 'South West', position: 'bottom-[22%] left-[12%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Osun', division: 'South West', position: 'bottom-[30%] left-[22%]', deliveryTime: '24-48h', coverage: '95%' },
+    { name: 'Ondo', division: 'South West', position: 'bottom-[32%] left-[28%]', deliveryTime: '24-48h', coverage: '95%' },
+    { name: 'Ekiti', division: 'South West', position: 'bottom-[35%] left-[25%]', deliveryTime: '48-72h', coverage: '95%' },
 
-    // Add more districts for other divisions...
-    { name: 'Khulna', division: 'Khulna', position: 'bottom-[32%] left-[28%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Jashore', division: 'Khulna', position: 'bottom-[38%] left-[24%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Satkhira', division: 'Khulna', position: 'bottom-[30%] left-[22%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Bagerhat', division: 'Khulna', position: 'bottom-[28%] left-[30%]', deliveryTime: '48-72h', coverage: '95%' },
+    // South South
+    { name: 'Port Harcourt (Rivers)', division: 'South South', position: 'bottom-[15%] left-[45%]', deliveryTime: '24h', coverage: '100%' },
+    { name: 'Delta', division: 'South South', position: 'bottom-[22%] left-[35%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Edo', division: 'South South', position: 'bottom-[28%] left-[32%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Cross River', division: 'South South', position: 'bottom-[20%] right-[30%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Akwa Ibom', division: 'South South', position: 'bottom-[12%] right-[35%]', deliveryTime: '24-48h', coverage: '95%' },
+    { name: 'Bayelsa', division: 'South South', position: 'bottom-[10%] left-[38%]', deliveryTime: '48-72h', coverage: '90%' },
 
-    { name: 'Sylhet', division: 'Sylhet', position: 'top-[25%] right-[18%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Moulvibazar', division: 'Sylhet', position: 'top-[30%] right-[16%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Habiganj', division: 'Sylhet', position: 'top-[32%] right-[22%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Sunamganj', division: 'Sylhet', position: 'top-[22%] right-[28%]', deliveryTime: '72-96h', coverage: '90%' },
+    // South East
+    { name: 'Enugu', division: 'South East', position: 'bottom-[30%] right-[35%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Anambra', division: 'South East', position: 'bottom-[28%] left-[45%]', deliveryTime: '24-48h', coverage: '100%' },
+    { name: 'Imo', division: 'South East', position: 'bottom-[20%] left-[48%]', deliveryTime: '24-48h', coverage: '95%' },
+    { name: 'Abia', division: 'South East', position: 'bottom-[18%] left-[52%]', deliveryTime: '24-48h', coverage: '95%' },
+    { name: 'Ebonyi', division: 'South East', position: 'bottom-[28%] right-[38%]', deliveryTime: '48-72h', coverage: '90%' },
 
-    { name: 'Barisal', division: 'Barisal', position: 'bottom-[35%] left-[42%]', deliveryTime: '48-72h', coverage: '100%' },
-    { name: 'Patuakhali', division: 'Barisal', position: 'bottom-[28%] left-[42%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Bhola', division: 'Barisal', position: 'bottom-[32%] left-[46%]', deliveryTime: '48-72h', coverage: '95%' },
-
-    { name: 'Rangpur', division: 'Rangpur', position: 'top-[18%] left-[35%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Dinajpur', division: 'Rangpur', position: 'top-[15%] left-[30%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Kurigram', division: 'Rangpur', position: 'top-[15%] left-[40%]', deliveryTime: '48-72h', coverage: '95%' },
-
-    { name: 'Mymensingh', division: 'Mymensingh', position: 'top-[32%] left-[47%]', deliveryTime: '24-48h', coverage: '100%' },
-    { name: 'Netrokona', division: 'Mymensingh', position: 'top-[28%] left-[50%]', deliveryTime: '48-72h', coverage: '95%' },
-    { name: 'Jamalpur', division: 'Mymensingh', position: 'top-[30%] left-[42%]', deliveryTime: '48-72h', coverage: '95%' },
+    // North East
+    { name: 'Maiduguri (Borno)', division: 'North East', position: 'top-[15%] right-[10%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Adamawa', division: 'North East', position: 'center right-[10%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Bauchi', division: 'North East', position: 'top-[30%] right-[30%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Gombe', division: 'North East', position: 'top-[35%] right-[20%]', deliveryTime: '48-72h', coverage: '95%' },
+    { name: 'Taraba', division: 'North East', position: 'center right-[20%]', deliveryTime: '48-72h', coverage: '90%' },
+    { name: 'Yobe', division: 'North East', position: 'top-[12%] right-[25%]', deliveryTime: '48-72h', coverage: '90%' },
   ];
 
   const filteredDistricts = districts.filter(district =>
@@ -80,13 +68,13 @@ const CoveragePage = () => {
   );
 
   const stats = [
-    { icon: <MapPin className="w-6 h-6" />, label: 'Districts Covered', value: '64', color: 'from-red-500 to-rose-600' },
+    { icon: <MapPin className="w-6 h-6" />, label: 'States Covered', value: '36+1', color: 'from-red-500 to-rose-600' },
     { icon: <Package className="w-6 h-6" />, label: 'Daily Deliveries', value: '5000+', color: 'from-blue-500 to-cyan-600' },
     { icon: <Clock className="w-6 h-6" />, label: 'Avg Delivery', value: '24-48h', color: 'from-purple-500 to-pink-600' },
     { icon: <TrendingUp className="w-6 h-6" />, label: 'Success Rate', value: '99.5%', color: 'from-green-500 to-emerald-600' },
   ];
 
-  const divisions = ['all', 'dhaka', 'chittagong', 'rajshahi', 'khulna', 'sylhet', 'barisal', 'rangpur', 'mymensingh'];
+  const divisions = ['all', 'North West', 'North Central', 'South West', 'South South', 'South East', 'North East'];
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-gray-50 min-h-screen pt-24 pb-16">
@@ -100,7 +88,7 @@ const CoveragePage = () => {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Delivering to every corner of Bangladesh with speed and reliability
+            Delivering to every corner of Nigeria with speed and reliability
           </p>
         </div>
 
@@ -139,11 +127,11 @@ const CoveragePage = () => {
                 key={division}
                 onClick={() => setActiveTab(division)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === division
-                    ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
-                {division.charAt(0).toUpperCase() + division.slice(1)}
+                {division === 'all' ? 'All' : division}
               </button>
             ))}
           </div>
@@ -176,8 +164,8 @@ const CoveragePage = () => {
               <div className="relative w-full aspect-square max-w-3xl mx-auto">
                 {/* Bangladesh Map Image */}
                 <Image
-                  src="/bangladesh-map.png"
-                  alt="Bangladesh Coverage Map"
+                  src="/kano_map.png"
+                  alt="Kano State Coverage Map"
                   width={800}
                   height={800}
                   className="w-full h-full object-contain"
@@ -236,8 +224,8 @@ const CoveragePage = () => {
                     key={index}
                     onClick={() => setSelectedDistrict(district)}
                     className={`w-full text-left p-3 rounded-lg transition-all ${selectedDistrict?.name === district.name
-                        ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md'
-                        : 'bg-gray-50 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md'
+                      : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                   >
                     <div className="font-semibold">{district.name}</div>

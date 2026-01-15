@@ -9,15 +9,16 @@ import Container from "../../../Components/Shared/Container/Container.jsx";
 import { motion } from "framer-motion";
 
 export default function BeARider() {
-  const divisions = {
-    Dhaka: ["Dhaka", "Gazipur", "Narayanganj", "Tangail"],
-    Chattogram: ["Chattogram", "Cox’s Bazar", "Rangamati", "Bandarban"],
-    Sylhet: ["Sylhet", "Moulvibazar", "Habiganj", "Sunamganj"],
-    Rajshahi: ["Rajshahi", "Bogura", "Pabna", "Natore"],
-    Khulna: ["Khulna", "Jessore", "Satkhira", "Bagerhat"],
-    Barisal: ["Barisal", "Patuakhali", "Bhola", "Jhalokathi"],
-    Rangpur: ["Rangpur", "Dinajpur", "Kurigram", "Lalmonirhat"],
-    Mymensingh: ["Mymensingh", "Jamalpur", "Netrokona", "Sherpur"],
+  const states = {
+    "Kano State": [
+      "Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi", "Bunkure", "Dala", "Dambatta",
+      "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko",
+      "Garun Mallam", "Gaya", "Gezawa", "Ghari", "Gwale", "Gwarzo", "Kabo",
+      "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura",
+      "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gado", "Rogo",
+      "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada",
+      "Ungogo", "Warawa", "Wudil"
+    ],
   };
 
   const [formData, setFormData] = useState({
@@ -25,17 +26,18 @@ export default function BeARider() {
     age: "",
     email: "",
     contact: "",
-    division: "",
-    district: "",
+    contact: "",
+    state: "",
+    lga: "",
   });
 
-  const [districts, setDistricts] = useState([]);
+  const [lgas, setLgas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleDivisionChange = (e) => {
-    const division = e.target.value;
-    setFormData({ ...formData, division, district: "" });
-    setDistricts(divisions[division] || []);
+  const handleStateChange = (e) => {
+    const state = e.target.value;
+    setFormData({ ...formData, state, lga: "" });
+    setLgas(states[state] || []);
   };
 
   const handleChange = (e) => {
@@ -56,10 +58,10 @@ export default function BeARider() {
           age: "",
           email: "",
           contact: "",
-          division: "",
-          district: "",
+          state: "",
+          lga: "",
         });
-        setDistricts([]);
+        setLgas([]);
       } else {
         toast.error("Failed to submit application.");
       }
@@ -137,7 +139,7 @@ export default function BeARider() {
                   </span>
                 </h1>
                 <p className="text-lg text-gray-600 max-w-xl">
-                  Become a Transify rider partner today. Enjoy flexible hours, great earnings, and be part of the fastest-growing logistics network in Bangladesh.
+                  Become a Mk-Global Express rider partner today. Enjoy flexible hours, great earnings, and be part of the fastest-growing logistics network in Nigeria.
                 </p>
               </motion.div>
 
@@ -168,7 +170,7 @@ export default function BeARider() {
       <section className="py-20">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Ride with Transify?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Ride with Mk-Global?</h2>
             <p className="text-gray-600">We care about our riders. That's why we offer the best benefits in the industry to help you succeed.</p>
           </div>
 
@@ -228,7 +230,7 @@ export default function BeARider() {
                     </div>
                     <div>
                       <div className="text-sm text-gray-500">Weekly Earnings</div>
-                      <div className="text-2xl font-bold text-gray-900">৳ 12,500</div>
+                      <div className="text-2xl font-bold text-gray-900">₦ 12,500</div>
                     </div>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2">
@@ -286,7 +288,7 @@ export default function BeARider() {
 
                 <div className="relative z-10 mt-10">
                   <div className="text-sm text-slate-400">Questions? Call us</div>
-                  <div className="text-xl font-bold text-white">+880 1234 567890</div>
+                  <div className="text-xl font-bold text-white">+234 704 305 1284</div>
                 </div>
               </div>
 
@@ -351,7 +353,7 @@ export default function BeARider() {
                         name="contact"
                         value={formData.contact}
                         onChange={handleChange}
-                        placeholder="017..."
+                        placeholder="070..."
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition bg-gray-50 focus:bg-white"
                         required
                       />
@@ -360,38 +362,38 @@ export default function BeARider() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Division</label>
+                      <label className="text-sm font-medium text-gray-700">State</label>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <select
-                          name="division"
-                          value={formData.division}
-                          onChange={handleDivisionChange}
+                          name="state"
+                          value={formData.state}
+                          onChange={handleStateChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition bg-gray-50 focus:bg-white appearance-none"
                           required
                         >
-                          <option value="">Select Division</option>
-                          {Object.keys(divisions).map((div) => (
-                            <option key={div} value={div}>{div}</option>
+                          <option value="">Select State</option>
+                          {Object.keys(states).map((state) => (
+                            <option key={state} value={state}>{state}</option>
                           ))}
                         </select>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">District</label>
+                      <label className="text-sm font-medium text-gray-700">LGA</label>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <select
-                          name="district"
-                          value={formData.district}
+                          name="lga"
+                          value={formData.lga}
                           onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition bg-gray-50 focus:bg-white appearance-none"
                           required
-                          disabled={!districts.length}
+                          disabled={!lgas.length}
                         >
-                          <option value="">Select District</option>
-                          {districts.map((dist) => (
-                            <option key={dist} value={dist}>{dist}</option>
+                          <option value="">Select LGA</option>
+                          {lgas.map((lga) => (
+                            <option key={lga} value={lga}>{lga}</option>
                           ))}
                         </select>
                       </div>
