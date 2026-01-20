@@ -1,16 +1,19 @@
+import prisma from "@/Lib/prisma";
 import ProtectedRoute from "@/Components/Shared/ProtectedRoute";
 import { Mail, Calendar, Search, Filter, User } from "lucide-react";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
 
-// Server Component to fetch data
+// Server Component function now uses Prisma
 async function getSubscribers() {
     try {
-        const subscribersCollection = await dbConnect(collectionNamesObj.newslatterSubscribersCollection);
-        const subscribers = await subscribersCollection.find({}).sort({ _id: -1 }).toArray();
+        const subscribers = await prisma.newsletterSubscriber.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
         return subscribers.map(sub => ({
             ...sub,
-            _id: sub._id.toString(),
-            // Ensure date is serializable or formatted if it's a Date object
+            // Format ID for frontend if needed, though Prisma string IDs are already fine
             createdAt: sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'
         }));
     } catch (error) {
@@ -23,7 +26,7 @@ export default async function NewsletterSubscribersPage() {
     const subscribers = await getSubscribers();
 
     return (
-        <ProtectedRoute allowedRoles={["admin"]}>
+        <ProtectedRoute allowedRoles={["ADMIN", "MERCHANT"]}>
             <div className="p-8 mt-16 min-h-screen bg-gray-50/50">
 
                 {/* Header */}
@@ -39,7 +42,7 @@ export default async function NewsletterSubscribersPage() {
                                 type="text"
                                 placeholder="Search subscribers..."
                                 className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-64"
-                                disabled // Search functionality would need client-side state or URL params, strict server component for now
+                                disabled // Search functionality would need client-side state or URL params
                             />
                         </div>
                         <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition-colors">
@@ -63,7 +66,7 @@ export default async function NewsletterSubscribersPage() {
                             <tbody className="divide-y divide-gray-50">
                                 {subscribers.length > 0 ? (
                                     subscribers.map((sub, index) => (
-                                        <tr key={sub._id} className="group hover:bg-gray-50/80 transition-colors">
+                                        <tr key={sub.id} className="group hover:bg-gray-50/80 transition-colors">
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">

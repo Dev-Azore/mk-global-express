@@ -1,17 +1,39 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
+import prisma from "@/Lib/prisma";
 
 // GET: fetch all orders
 export async function GET() {
   try {
-    const collection = await dbConnect(
-      collectionNamesObj.bookingParcelsCollection
-    );
-    const orders = await collection.find().sort({ createdAt: -1 }).toArray();
+    const orders = await prisma.parcel.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        sender: {
+          select: {
+            name: true,
+            email: true,
+            phone: true
+          }
+        },
+        payment: true,
+        rider: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+                phone: true
+              }
+            }
+          }
+        }
+      }
+    });
 
     return NextResponse.json({ success: true, orders });
   } catch (error) {
+    console.error("Error fetching all orders:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch orders" },
       { status: 500 }
@@ -19,7 +41,7 @@ export async function GET() {
   }
 }
 
-//PATCH: update order status
+// PATCH: update order status
 export async function PATCH(req) {
   try {
     const { id, status } = await req.json();
@@ -31,14 +53,19 @@ export async function PATCH(req) {
       );
     }
 
-    const collection = await dbConnect(
-      collectionNamesObj.bookingParcelsCollection
-    );
+    // Update parcel status using Prisma
+    const updatedParcel = await prisma.parcel.update({
+      where: { id },
+      data: { status }
+    });
 
-    await collection.updateOne({ _id: new ObjectId(id) }, { $set: { status } });
-
-    return NextResponse.json({ success: true, message: "Order updated" });
+    return NextResponse.json({
+      success: true,
+      message: "Order updated successfully",
+      parcel: updatedParcel
+    });
   } catch (error) {
+    console.error("Error updating order:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update order" },
       { status: 500 }

@@ -1,27 +1,71 @@
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
+import { NextResponse } from "next/server";
+import prisma from "@/Lib/prisma";
+import { z } from "zod";
 
-export async function POST(req) {
+const newsletterSchema = z.object({
+  email: z.string().email("Valid email required"),
+});
+
+export async function POST(request) {
   try {
-    const data = await req.json();
+    const body = await request.json();
+    const validation = newsletterSchema.safeParse(body);
 
-    const collection = await dbConnect(collectionNamesObj.newslatterSubscribersCollection);
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: "Valid email required" },
+        { status: 400 }
+      );
+    }
 
-    const newsletterData = {
-      name: data.name || "Anonymous",
-      email: data.email,
-      image: data.image || "",
-      createdAt: new Date(),
-    };
+    const { email } = validation.data;
 
-    const result = await collection.insertOne(newsletterData);
+    // Check if user already exists or is already subscribed
+    const existing = await prisma.newsletterSubscriber.findUnique({
+      where: { email },
+    });
 
-    return new Response(
-      JSON.stringify({ success: true, id: result.insertedId }),
-      { status: 200 }
-    );
+    if (existing) {
+      return NextResponse.json({
+        success: true,
+        message: "Already subscribed to our newsletter!",
+      });
+    }
+
+    // Create subscriber in the new Prisma model
+    await prisma.newsletterSubscriber.create({
+      data: { email },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Successfully subscribed to newsletter!",
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+    console.error("Newsletter subscription error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Get all newsletter subscribers (Admin only)
+export async function GET() {
+  try {
+    const subscribers = await prisma.newsletterSubscriber.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({
+      success: true,
+      subscribers,
+      count: subscribers.length,
+    });
+  } catch (error) {
+    console.error("Get subscribers error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

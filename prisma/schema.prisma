@@ -1,0 +1,195 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums for strict validation
+enum Role {
+  USER
+  RIDER
+  ADMIN
+  MERCHANT
+}
+
+enum ParcelStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ------------------------------
+// User & Auth Models
+// ------------------------------
+
+model User {
+  id            String    @id @default(uuid())
+  username      String?   @unique
+  name          String
+  email         String    @unique
+  phone         String?   @unique
+  password      String?   // Hashed
+  image         String?
+  role          Role      @default(USER)
+  emailVerified DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  riderProfile  RiderProfile?
+  adminProfile  AdminProfile?
+  
+  sentParcels   Parcel[]      @relation("Sender")
+  payments      Payment[]
+  wallet        Wallet?
+  
+  // NextAuth Account support (optional but good for Google Auth)
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                 String  @id @default(uuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RiderProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  
+  isVerified      Boolean  @default(false)
+  vehicleType     String?  // Bike, Van, Truck
+  plateNumber     String?
+  licenseNumber   String?
+  
+  currentLat      Float?
+  currentLng      Float?
+  availability    Boolean  @default(true)
+
+  assignedParcels Parcel[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AdminProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  
+  permissions String[] // ["MANAGE_USERS", "VIEW_FINANCE"]
+  department  String?
+}
+
+// ------------------------------
+// Logic Models (Parcels, Payments)
+// ------------------------------
+
+model Parcel {
+  id           String       @id @default(uuid())
+  trackingId   String       @unique // e.g. TR-839210
+  
+  senderId     String
+  sender       User         @relation("Sender", fields: [senderId], references: [id])
+  
+  riderId      String?
+  rider        RiderProfile? @relation(fields: [riderId], references: [id])
+
+  // Address Details (Stored as JSON to allow flexible fields like LGA)
+  pickupAddress  Json 
+  dropoffAddress Json
+  
+  description  String?
+  weight       Float? // kg
+  
+  status       ParcelStatus @default(PENDING)
+  price        Float
+  distance     Float? // km
+  
+  payment      Payment?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  provider      String        @default("paymentpoint") 
+  providerRef   String?       // Transaction ID from PaymentPoint
+  
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  
+  parcelId      String?       @unique
+  parcel        Parcel?       @relation(fields: [parcelId], references: [id])
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Wallet {
+  id      String @id @default(uuid())
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id])
+  balance Float  @default(0.0)
+  
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model SupportMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  status    String   @default("PENDING") // PENDING, RESOLVED
+  createdAt DateTime @default(now())
+}

@@ -3,17 +3,40 @@ import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, UserCheck, Users, Truck } from "lucide-react";
 import { FaBoxOpen, FaUserTie } from "react-icons/fa";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Automatic redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      if (callbackUrl && callbackUrl !== "/dashboard") {
+        router.push(callbackUrl);
+      } else {
+        // Role-based default redirect
+        const role = session.user.role?.toUpperCase();
+        if (role === "ADMIN" || role === "MERCHANT") {
+          router.push("/security-control");
+        } else if (role === "RIDER") {
+          router.push("/dashboard/rider");
+        } else {
+          router.push("/dashboard");
+        }
+      }
+    }
+  }, [status, session, router, callbackUrl]);
 
   // Handle login form submit
   const handleSubmit = async (e) => {
@@ -30,15 +53,15 @@ const LoginPage = () => {
       alert("Invalid credentials");
       setIsLoading(false);
     } else {
-      setIsLoading(false);
-      router.push("/");
+      // Successful login - redirect to dashboard
+      router.push("/dashboard");
     }
   };
 
   // Handle Google login
   const handleGoogleLogin = async () => {
     try {
-      await signIn("google", { callbackUrl: "/?login=google-success" });
+      await signIn("google", { callbackUrl });
     } catch (error) {
       console.error("Google Sign In Error:", error);
       alert("Google Login Failed: " + error.message);

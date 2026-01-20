@@ -108,48 +108,6 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Payment Methods */}
-            <div>
-              <h3 className="text-lg font-bold text-white mb-6 border-b-2 border-red-500 inline-block pb-1">
-                We Accept
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  {
-                    name: "Visa",
-                    icon: FaCcVisa,
-                    bg: "bg-blue-600",
-                    text: "Visa"
-                  },
-                  {
-                    name: "Mastercard",
-                    icon: FaCcMastercard,
-                    bg: "bg-red-600",
-                    text: "Mastercard"
-                  },
-                  {
-                    name: "PayPal",
-                    icon: FaCcPaypal,
-                    bg: "bg-blue-500",
-                    text: "PayPal"
-                  },
-                  {
-                    name: "bKash",
-                    icon: Smartphone,
-                    bg: "bg-pink-600",
-                    text: "bKash"
-                  },
-                ].map((payment, index) => (
-                  <div
-                    key={index}
-                    className={`relative ${payment.bg} p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 h-16 flex items-center justify-center hover:scale-105 cursor-pointer`}
-                  >
-                    <payment.icon className="h-8 w-8 text-white" />
-                    <span className="text-sm text-white font-semibold ml-2">{payment.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Bottom Bar */}

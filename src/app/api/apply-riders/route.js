@@ -1,89 +1,197 @@
-// Commit: add POST and GET API routes for rider application
 import { NextResponse } from "next/server";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
-import { ObjectId } from "mongodb";
+import prisma from "@/Lib/prisma";
+import { z } from "zod";
 
+// Validation schema
+const riderApplicationSchema = z.object({
+  name: z.string().min(2, "Name required"),
+  email: z.string().email("Valid email required"),
+  phone: z.string().min(10, "Valid phone number required"),
+  vehicleType: z.enum(["BIKE", "VAN", "TRUCK"], {
+    errorMap: () => ({ message: "Invalid vehicle type" }),
+  }),
+  plateNumber: z.string().min(5, "Plate number required"),
+  licenseNumber: z.string().min(5, "License number required"),
+  address: z.string().min(10, "Full address required"),
+});
 
-// POST → insert new rider
-export async function POST(req) {
+export async function POST(request) {
   try {
-    const body = await req.json();
-    const collection = await dbConnect(collectionNamesObj.applyRidersCollection);
+    const body = await request.json();
 
-    // Add timestamps
-    const now = new Date();
-    const riderData = {
-      ...body,
-      createdAt: now,
-      date: now.getDate(),
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-      time: now.toLocaleTimeString("en-US", { hour12: true }),
-       status: "pending",
-    };
+    // Validate input
+    const validation = riderApplicationSchema.safeParse(body);
 
-    const result = await collection.insertOne(riderData);
-
-    return NextResponse.json(
-      { success: true, message: "Rider applied successfully", result },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("❌ Error inserting rider:", error);
-    return NextResponse.json(
-      { success: false, message: "Something went wrong" },
-      { status: 500 }
-    );
-  }
-}
-
-
-// GET → fetch only pending riders
-export async function GET() {
-  try {
-    const collection = await dbConnect("applyRiders");
-    const pendingRiders = await collection
-      .find({ status: "pending" })
-      .toArray();
-
-    return NextResponse.json({ success: true, riders: pendingRiders });
-  } catch (error) {
-    console.error("Error fetching pending riders:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch riders" },
-      { status: 500 }
-    );
-  }
-}
-
-// PATCH → toggle active or update status/feedback
-export async function PATCH(req) {
-  try {
-    const { id, status, feedback, active } = await req.json();
-    const collection = await dbConnect("applyRiders");
-
-    const updateData = {};
-    if (status) updateData.status = status;
-    if (feedback !== undefined) updateData.feedback = feedback;
-    if (active !== undefined) updateData.active = active;
-
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    );
-
-    if (result.modifiedCount === 1) {
-      return NextResponse.json({ success: true, message: "Rider updated" });
-    } else {
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, message: "No rider updated" },
+        {
+          success: false,
+          error: "Validation failed",
+          details: validation.error.errors
+        },
         { status: 400 }
       );
     }
+
+    const { name, email, phone, vehicleType, plateNumber, licenseNumber, address } = validation.data;
+
+    // Check if user already exists
+    let user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    // If user doesn't exist, create one
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          role: "USER", // Will be upgraded to RIDER upon approval
+        },
+      });
+    }
+
+    // Check if rider profile already exists
+    const existingProfile = await prisma.riderProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (existingProfile) {
+      return NextResponse.json(
+        { success: false, error: "Rider application already exists" },
+        { status: 409 }
+      );
+    }
+
+    // Create rider profile (pending verification)
+    const riderProfile = await prisma.riderProfile.create({
+      data: {
+        userId: user.id,
+        vehicleType,
+        plateNumber,
+        licenseNumber,
+        isVerified: false,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Application submitted successfully. We'll review and contact you soon.",
+      application: {
+        id: riderProfile.id,
+        name,
+        email,
+        status: "pending",
+      },
+    });
   } catch (error) {
-    console.error("❌ Error updating rider:", error);
+    console.error("Rider application error:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to update rider" },
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Get all rider applications (Admin only)
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status"); // "verified" or "pending"
+
+    const where = status === "verified"
+      ? { isVerified: true }
+      : status === "pending"
+        ? { isVerified: false }
+        : {};
+
+    const riders = await prisma.riderProfile.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      riders: riders.map(r => ({
+        id: r.id,
+        name: r.user.name,
+        email: r.user.email,
+        vehicleType: r.vehicleType,
+        plateNumber: r.plateNumber,
+        isVerified: r.isVerified,
+        createdAt: r.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Get riders error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Approve/Reject rider application (Admin only)
+export async function PATCH(request) {
+  try {
+    const { riderId, action } = await request.json();
+
+    if (!riderId || !action) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    if (action === "approve") {
+      // Update rider profile and user role in a transaction
+      await prisma.$transaction(async (tx) => {
+        const riderProfile = await tx.riderProfile.update({
+          where: { id: riderId },
+          data: { isVerified: true },
+        });
+
+        await tx.user.update({
+          where: { id: riderProfile.userId },
+          data: { role: "RIDER" },
+        });
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Rider approved successfully",
+      });
+    } else if (action === "reject") {
+      // Delete rider profile
+      await prisma.riderProfile.delete({
+        where: { id: riderId },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Rider application rejected",
+      });
+    }
+
+    return NextResponse.json(
+      { success: false, error: "Invalid action" },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("Update rider error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

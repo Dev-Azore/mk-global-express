@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/Lib/db.connect.js";
+import prisma from "@/Lib/prisma";
 
 export async function GET() {
     const debugInfo = {
@@ -7,16 +7,16 @@ export async function GET() {
         NEXTAUTH_SECRET_SET: !!process.env.NEXTAUTH_SECRET,
         GOOGLE_CLIENT_ID_SET: !!process.env.GOOGLE_CLIENT_ID,
         GOOGLE_CLIENT_SECRET_SET: !!process.env.GOOGLE_CLIENT_SECRET,
-        MONGODB_URI_SET: !!process.env.MONGODB_URI,
+        DATABASE_URL_SET: !!process.env.DATABASE_URL,
         NODE_ENV: process.env.NODE_ENV,
     };
 
     try {
-        // Test DB Connection
-        await dbConnect("test");
-        debugInfo.DB_CONNECTION = "SUCCESS";
+        // Test Prisma Connection
+        await prisma.$queryRaw`SELECT 1`;
+        debugInfo.DB_CONNECTION = "PRISMA_SUCCESS";
     } catch (error) {
-        debugInfo.DB_CONNECTION = "FAILED: " + error.message;
+        debugInfo.DB_CONNECTION = "PRISMA_FAILED: " + error.message;
     }
 
     return NextResponse.json(debugInfo);

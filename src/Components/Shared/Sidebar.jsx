@@ -147,7 +147,7 @@ const Sidebar = ({ onClick, collapsed = false }) => {
     }
 
     // Priority 2: Fallback to user role if pathname doesn't match specific dashboards
-    if (user?.role === "admin") {
+    if (user?.role?.toUpperCase() === "ADMIN") {
       return [
         {
           title: "Overview",
@@ -180,7 +180,7 @@ const Sidebar = ({ onClick, collapsed = false }) => {
           ]
         }
       ];
-    } else if (user?.role === "rider") {
+    } else if (user?.role?.toUpperCase() === "RIDER") {
       return [
         {
           title: "Overview",

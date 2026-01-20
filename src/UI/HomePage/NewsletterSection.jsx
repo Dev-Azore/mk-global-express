@@ -1,15 +1,17 @@
 "use client";
-import { useState } from "react";
-import axios from "axios";
+import { useState, useRef } from "react";
 import Container from "../../Components/Shared/Container/Container";
-import { motion } from "framer-motion";
-import { Send, Mail, BellRing, ArrowRight } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { Send, Mail, BellRing, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import axiosInstance from "../../Lib/axiosInstance.js";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -19,88 +21,98 @@ export default function NewsletterSection() {
     try {
       const res = await axiosInstance.post("/newsletter", { email });
       if (res.data?.success) {
-        setMessage("Subscribed successfully!");
+        setMessage("Success! You're now on the list.");
         setEmail("");
       } else {
-        setMessage("Subscription failed.");
+        setMessage("Subscription failed. Please check your email.");
       }
     } catch (err) {
       console.error(err);
-      setMessage("Something went wrong.");
+      setMessage("Something went wrong. Try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="relative py-24 overflow-hidden bg-white">
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 z-0 opacity-40 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]"></div>
+    <section ref={ref} className="py-24 bg-white relative overflow-hidden">
+      {/* Background Micro-patterns */}
+      <div className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none">
+        <svg width="100%" height="100%">
+          <pattern id="cross" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 10 10 L 30 30 M 30 10 L 10 30" fill="none" stroke="currentColor" strokeWidth="1" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#cross)" />
+        </svg>
+      </div>
 
       <Container>
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative w-full rounded-[2.5rem] bg-white border border-red-100 shadow-2xl shadow-red-500/5 overflow-hidden z-10"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.8 }}
+          className="relative bg-slate-900 rounded-[50px] p-10 md:p-20 shadow-[0_50px_100px_-20px_rgba(220,38,38,0.2)] overflow-hidden"
         >
-          {/* Decorative Side Accents */}
-          <div className="absolute left-0 top-0 w-2 h-full bg-red-500" />
-          <div className="absolute right-0 top-0 w-2 h-full bg-red-500" />
+          {/* Radial Center Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-red-600/20 via-transparent to-blue-600/10 blur-[100px] -z-10" />
 
-          <div className="flex flex-col lg:flex-row items-center justify-between p-8 md:p-12 lg:p-16 gap-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-            {/* Left Side: Text Content */}
-            <div className="w-full lg:w-1/2 text-center lg:text-left space-y-6">
+            {/* Left: Content */}
+            <div className="space-y-8 relative z-10 text-center lg:text-left">
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 text-red-600 font-semibold text-sm shadow-sm border border-red-100"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/10 border border-red-500/20 text-red-500 text-xs font-black uppercase tracking-widest"
               >
-                <BellRing size={16} />
-                <span>Never Miss an Update</span>
+                <Zap size={14} className="fill-red-500" />
+                Insider Updates
               </motion.div>
 
-              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-                Subscribe to our <br />
-                <span className="text-red-600">Newsletter</span>
-              </h2>
+              <div className="space-y-4">
+                <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tighter">
+                  GET THE <br />
+                  <span className="text-red-500 italic">LOGISTICS EDGE.</span>
+                </h2>
+                <p className="text-xl text-slate-400 font-medium max-w-lg leading-relaxed mx-auto lg:mx-0">
+                  Stay ahead with weekly insights on delivery efficiency, promo codes, and expansion news. No spam, just pure value.
+                </p>
+              </div>
 
-              <p className="text-lg text-gray-500 max-w-lg mx-auto lg:mx-0">
-                Get the latest logistical trends, delivery coverage updates, and exclusive promo codes delivered right to your inbox.
-              </p>
-
-              {/* Decorative List */}
-              <div className="hidden sm:flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-gray-600 font-medium pt-2">
-                {["Weekly Updates", "No Spam", "Unsubscribe Anytime"].map((item, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    {item}
-                  </div>
-                ))}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-slate-500">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-green-500" />
+                  <span className="text-sm font-bold tracking-tight">Verified Secure</span>
+                </div>
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+                <div className="flex items-center gap-2">
+                  <Mail size={18} className="text-blue-500" />
+                  <span className="text-sm font-bold tracking-tight">Weekly Digest</span>
+                </div>
               </div>
             </div>
 
-            {/* Right Side: Input Form */}
-            <div className="w-full lg:w-5/12 bg-gray-50 p-8 rounded-3xl border border-gray-100">
-              <form onSubmit={handleSubscribe} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 ml-1">Email Address</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-colors">
-                      <Mail size={20} />
-                    </div>
-                    <input
-                      type="email"
-                      placeholder="john@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-sm"
-                    />
+            {/* Right: Modern Form Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
+              animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="bg-white/5 backdrop-blur-2xl p-8 md:p-12 rounded-[40px] border border-white/10 shadow-2xl"
+            >
+              <form onSubmit={handleSubscribe} className="space-y-5">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-500 group-focus-within:text-red-500 transition-colors">
+                    <Mail size={22} />
                   </div>
+                  <input
+                    type="email"
+                    placeholder="Enter your work email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-3xl py-6 pl-16 pr-6 text-white text-lg font-bold placeholder-slate-600 focus:outline-none focus:ring-4 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                  />
                 </div>
 
                 <motion.button
@@ -108,32 +120,32 @@ export default function NewsletterSection() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-lg shadow-lg shadow-red-500/30 transition-all flex items-center justify-center gap-2 group"
+                  className="w-full py-6 rounded-3xl bg-red-600 hover:bg-red-700 text-white font-black text-xl shadow-2xl shadow-red-500/30 transition-all flex items-center justify-center gap-3 active:scale-95 group overflow-hidden"
                 >
-                  {loading ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Subscribe Now <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
+                  <span className="relative z-10 flex items-center gap-3">
+                    {loading ? "Processing..." : "Join the Waitlist"}
+                    {!loading && <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform duration-300" />}
+                  </span>
                 </motion.button>
               </form>
 
               {message && (
-                <motion.p
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`mt-4 text-center text-sm font-medium ${message.includes("success") ? "text-green-600" : "text-red-600"}`}
+                  className={`mt-6 text-center text-sm font-bold px-4 py-3 rounded-2xl ${message.includes("Success")
+                      ? "bg-green-500/10 text-green-500 border border-green-500/20"
+                      : "bg-red-500/10 text-red-500 border border-red-500/20"
+                    }`}
                 >
                   {message}
-                </motion.p>
+                </motion.div>
               )}
 
-              <p className="text-xs text-center text-gray-400 mt-4">
-                By subscribing, you agree to our Terms & Conditions.
+              <p className="text-[10px] text-center text-slate-600 font-black uppercase tracking-[0.2em] mt-8">
+                Your privacy is our priority.
               </p>
-            </div>
+            </motion.div>
 
           </div>
         </motion.div>

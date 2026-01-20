@@ -1,26 +1,44 @@
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect";
+import prisma from "@/Lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/Lib/authOptions";
-
 
 // GET: user's order history
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const userEmail = session.user.email;
+    const userId = session.user.id;
 
-    const collection = await dbConnect(
-      collectionNamesObj.bookingParcelsCollection
-    );
-    const orders = await collection.find({ userEmail }).sort({ createdAt: -1 }).toArray();
+    // Fetch parcels sent by the user using Prisma
+    const orders = await prisma.parcel.findMany({
+      where: {
+        senderId: userId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        payment: true,
+        rider: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+                phone: true
+              }
+            }
+          }
+        }
+      }
+    });
 
     return NextResponse.json({ success: true, orders });
   } catch (error) {

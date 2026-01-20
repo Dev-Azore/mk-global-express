@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { IoMdClose, IoMdMenu } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "@/Components/Shared/Sidebar";
@@ -8,6 +10,7 @@ import Topbar from "@/Components/Shared/Topbar";
 import Link from "next/link";
 
 export default function DashboardLayout({ children }) {
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -19,6 +22,7 @@ export default function DashboardLayout({ children }) {
       setCollapsed(stored === "true");
     }
   }, []);
+
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {

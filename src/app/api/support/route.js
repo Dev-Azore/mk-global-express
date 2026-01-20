@@ -1,50 +1,66 @@
 import { NextResponse } from "next/server";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
+import prisma from "@/Lib/prisma";
+import { z } from "zod";
 
-// POST: Rider sends message
-export async function POST(req) {
+const supportSchema = z.object({
+  name: z.string().min(2, "Name required"),
+  email: z.string().email("Valid email required"),
+  subject: z.string().min(5, "Subject required"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+export async function POST(request) {
   try {
-    const body = await req.json();
-    const { riderName, riderEmail, message } = body;
+    const body = await request.json();
+    const validation = supportSchema.safeParse(body);
 
-    // const client = await clientPromise;
-    const collection = await dbConnect(
-      collectionNamesObj.supportMessagesCollection
-    );
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Validation failed",
+          details: validation.error.errors
+        },
+        { status: 400 }
+      );
+    }
 
-    await collection.insertOne({
-      riderName,
-      riderEmail,
-      message,
-      createdAt: new Date(),
+    const { name, email, subject, message } = validation.data;
+
+    // Create support message in Prisma database
+    await prisma.supportMessage.create({
+      data: { name, email, subject, message },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Message sent successfully!",
+      message: "Your message has been received. We'll get back to you soon!",
     });
   } catch (error) {
+    console.error("Support message error:", error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-// GET: Admin fetch messages
+// Get all support messages (Admin only)
 export async function GET() {
   try {
-    const collection = await dbConnect(
-      collectionNamesObj.supportMessagesCollection
-    );
-    const messages = await collection
-      .find()
-      .sort({ createdAt: -1 })
-      .toArray();
-    return NextResponse.json({ success: true, messages });
+    const messages = await prisma.supportMessage.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({
+      success: true,
+      messages,
+      count: messages.length,
+    });
   } catch (error) {
+    console.error("Get support messages error:", error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

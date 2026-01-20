@@ -1,75 +1,32 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const { data: session, status } = useSession();
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Restore from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = typeof window !== "undefined" ? localStorage.getItem("auth") : null;
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.user && parsed?.token) {
-          setUser(parsed.user);
-          setToken(parsed.token);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to restore auth from storage", err);
-    } finally {
-      setInitialized(true);
-    }
-  }, []);
-
-  // Keep user in sync with NextAuth session (role comes from backend)
-  useEffect(() => {
+  // Derive user state from NextAuth session
+  const user = useMemo(() => {
     if (status === "authenticated" && session?.user) {
-      const mappedUser = {
+      return {
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        role: session.user.role || "user",
+        role: session.user.role || "USER",
+        username: session.user.username,
       };
-      setUser((prev) => prev || mappedUser);
     }
+    return null;
   }, [session, status]);
 
-  const persist = useCallback((nextUser, nextToken) => {
-    setUser(nextUser);
-    setToken(nextToken);
-    try {
-      localStorage.setItem(
-        "auth",
-        JSON.stringify({
-          user: nextUser,
-          token: nextToken,
-        })
-      );
-    } catch (err) {
-      console.error("Failed to persist auth", err);
-    }
-  }, []);
+  // Derived loading state
+  const isAuthLoading = status === "loading" || loading;
 
-  const clear = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    try {
-      localStorage.removeItem("auth");
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const login = useCallback(async (email, password) => {
+  const login = async (email, password) => {
     setLoading(true);
     try {
       const result = await signIn("credentials", {
@@ -79,45 +36,23 @@ export function AuthProvider({ children }) {
       });
 
       if (result?.error) {
-        throw new Error(result.error || "Invalid credentials");
+        throw new Error(result.error);
       }
-
-      // Fetch session to get user + role from backend
-      const res = await fetch("/api/auth/session");
-      const json = await res.json();
-
-      if (!json?.user) {
-        throw new Error("Failed to load user session");
-      }
-
-      const mappedUser = {
-        id: json.user.id,
-        name: json.user.name,
-        email: json.user.email,
-        role: json.user.role || "user",
-      };
-
-      // Generate a simple token string (in a real app this would be a JWT from backend)
-      const generatedToken = `session-${Date.now()}`;
-
-      persist(mappedUser, generatedToken);
-
-      return { user: mappedUser, token: generatedToken };
+      return result;
     } finally {
       setLoading(false);
     }
-  }, [persist]);
+  };
 
-  const logout = useCallback(async () => {
-    clear();
+  const logout = async () => {
     await signOut({ callbackUrl: "/" });
-  }, [clear]);
+  };
 
   const value = {
     user,
-    token,
-    loading,
-    initialized,
+    token: null, // Tokens are now handled via secure browser cookies via NextAuth
+    loading: isAuthLoading,
+    initialized: status !== "loading",
     login,
     logout,
   };

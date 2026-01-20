@@ -1,13 +1,25 @@
 import { NextResponse } from "next/server";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
+import prisma from "@/Lib/prisma";
 
 // GET → fetch only approved riders
 export async function GET() {
   try {
-    const collection = await dbConnect(collectionNamesObj.applyRidersCollection);
-    const approvedRiders = await collection
-      .find({ status: "approved" })
-      .toArray();
+    // In new schema, approved riders are those with isVerified = true
+    const approvedRiders = await prisma.riderProfile.findMany({
+      where: {
+        isVerified: true
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+            image: true
+          }
+        }
+      }
+    });
 
     return NextResponse.json({ success: true, riders: approvedRiders });
   } catch (error) {

@@ -1,63 +1,81 @@
 "use client";
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, User, Users, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { FaBoxOpen } from "react-icons/fa";
 import Link from "next/link";
-import axiosInstance from "../../Lib/axiosInstance.js";
 import toast from "react-hot-toast";
 import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const RegisterPage = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  //  Handle Register
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrors({});
 
     try {
-      // Call API to register user
-      const { data } = await axiosInstance.post("/register", {
-        name,
-        email,
-        password,
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
-      if (data.success) {
-        toast.success("Account created successfully!");
+      const data = await response.json();
 
-        // Auto-login after registration
-        const res = await signIn("credentials", {
-          redirect: false,
-          email,
-          password,
-        });
-
-        if (res?.ok) {
-          window.location.href = "/"; // redirect to home
+      if (!response.ok) {
+        if (data.details) {
+          // Handle validation errors
+          const errorObj = {};
+          data.details.forEach(err => {
+            errorObj[err.field] = err.message;
+          });
+          setErrors(errorObj);
+          toast.error("Please fix the errors in the form");
         } else {
-          toast.error("Auto login failed!");
+          toast.error(data.error || "Registration failed");
         }
-      } else {
-        toast.error(data.error || "Something went wrong!");
+        return;
       }
+
+      toast.success("Account created successfully! Please log in.");
+
+      // Redirect to login page
+      router.push("/login");
     } catch (error) {
-      console.error("Register failed:", error.response?.data || error.message);
-      toast.error("Register failed!");
+      console.error("Registration error:", error);
+      toast.error("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle Google Register
   const handleGoogleRegister = async () => {
     try {
-      await signIn("google", { callbackUrl: "/?login=google-success" });
+      await signIn("google", { callbackUrl: "/dashboard" });
     } catch (error) {
       console.error("Google Register Error:", error);
       toast.error("Google Sign In Failed");
@@ -66,10 +84,8 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen w-full flex bg-white overflow-hidden">
-
-      {/* Left Side - Animated Section (Full Screen Height, 50% width) */}
+      {/* Left Side - Animated Section */}
       <div className="hidden lg:flex w-1/2 bg-red-50 relative items-center justify-center p-12 overflow-hidden">
-        {/* Abstract Shapes */}
         <motion.div
           animate={{ scale: [1, 1.3, 1], rotate: [0, -45, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
@@ -81,28 +97,6 @@ const RegisterPage = () => {
           className="absolute top-20 right-20 w-80 h-80 bg-red-100 rounded-full blur-3xl opacity-60"
         />
 
-        {/* Community/Safety Illustrations Scene */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Large Users Group */}
-          <motion.div
-            animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.05, 1] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 left-1/4 text-red-400/20"
-          >
-            <Users size={160} />
-          </motion.div>
-
-          {/* Security Shield */}
-          <motion.div
-            animate={{ y: [0, 20, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-1/3 right-1/4 text-rose-500/20"
-          >
-            <ShieldCheck size={120} />
-          </motion.div>
-        </div>
-
-        {/* Content */}
         <div className="relative z-10 text-center space-y-8 max-w-lg">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -128,8 +122,8 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      {/* Right Side - Register Form (Full Height, 50% width) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative">
+      {/* Right Side - Register Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative overflow-y-auto">
         <div className="max-w-md w-full space-y-6">
           <div className="text-center lg:text-left">
             <h2 className="text-4xl font-bold text-gray-900 tracking-tight">Create Account</h2>
@@ -139,6 +133,27 @@ const RegisterPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Username */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Choose a username"
+                  className={`w-full pl-10 pr-3 py-3 bg-white border ${errors.username ? 'border-red-500' : 'border-gray-200'} rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                  required
+                />
+              </div>
+              {errors.username && <p className="mt-1 text-sm text-red-600">{errors.username}</p>}
+            </div>
+
+            {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
               <div className="relative">
@@ -147,15 +162,18 @@ const RegisterPage = () => {
                 </div>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   placeholder="Your full name"
-                  className="w-full pl-10 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                  className={`w-full pl-10 pr-3 py-3 bg-white border ${errors.name ? 'border-red-500' : 'border-gray-200'} rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
                   required
                 />
               </div>
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
 
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <div className="relative">
@@ -164,15 +182,38 @@ const RegisterPage = () => {
                 </div>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email address"
-                  className="w-full pl-10 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="your.email@example.com"
+                  className={`w-full pl-10 pr-3 py-3 bg-white border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
                   required
                 />
               </div>
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
 
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+2348012345678 or 08012345678"
+                  className={`w-full pl-10 pr-3 py-3 bg-white border ${errors.phone ? 'border-red-500' : 'border-gray-200'} rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                  required
+                />
+              </div>
+              {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+            </div>
+
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
@@ -181,10 +222,11 @@ const RegisterPage = () => {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="Create a strong password"
-                  className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.password ? 'border-red-500' : 'border-gray-200'} rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
                   required
                 />
                 <button
@@ -192,13 +234,40 @@ const RegisterPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+              <p className="mt-1 text-xs text-gray-500">
+                Must be 8+ characters with uppercase, lowercase, number, and special character
+              </p>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm your password"
+                  className={`w-full pl-10 pr-10 py-3 bg-white border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-200'} rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200`}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
             </div>
 
             <button

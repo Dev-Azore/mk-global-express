@@ -78,14 +78,6 @@ export default function Navbar() {
                 />
               </div>
 
-              {/* Dashboard Link */}
-              <Link
-                href="/dashboard"
-                className="text-gray-700 hover:text-red-600 font-medium transition-colors"
-              >
-                Dashboard
-              </Link>
-
               {/* User Section */}
               {session ? (
                 <div className="relative">
@@ -111,6 +103,13 @@ export default function Navbar() {
                           <div className="font-semibold text-gray-900">{session?.user?.name || "User"}</div>
                           <div className="text-sm text-gray-600 truncate">{session?.user?.email}</div>
                         </div>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="block w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors font-medium border-b border-gray-100"
+                        >
+                          Dashboard
+                        </Link>
                         <button
                           onClick={() => signOut({ callbackUrl: "/" })}
                           className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors font-medium"
@@ -175,16 +174,6 @@ export default function Navbar() {
                     {link.label}
                   </Link>
                 ))}
-
-                {/* Mobile Dashboard Link */}
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all"
-                >
-                  <Package className="w-4 h-4" />
-                  Dashboard
-                </Link>
 
                 {/* Mobile Auth */}
                 <div className="pt-4 border-t border-gray-200 space-y-2">

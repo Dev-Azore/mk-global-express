@@ -1,21 +1,27 @@
 import { NextResponse } from "next/server";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
+import prisma from "@/Lib/prisma";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const collection = await dbConnect(collectionNamesObj.bookingParcelsCollection);
-    const allOrders = await collection.find().sort({ createdAt: 1 }).toArray();
+    // Total balance estimation from successful payments
+    const successfulPayments = await prisma.payment.findMany({
+      where: {
+        status: 'SUCCESS'
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
 
-    // total balance using 'amount'
-    const totalBalance = allOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
+    const totalBalance = successfulPayments.reduce((sum, p) => sum + p.amount, 0);
 
-    // cumulative growth for chart
+    // Cumulative growth for chart
     let cumulative = 0;
-    const chartData = allOrders.map((o) => {
-      cumulative += o.amount || 0;
-      const date = new Date(o.createdAt);
+    const chartData = successfulPayments.map((p) => {
+      cumulative += p.amount;
+      const date = new Date(p.createdAt);
       return {
         date: `${date.getDate()}/${date.getMonth() + 1}`,
         balance: cumulative,
@@ -28,7 +34,7 @@ export async function GET() {
       chartData,
     });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ success: false, message: "Failed" }, { status: 500 });
+    console.error("Error calculating balance:", err);
+    return NextResponse.json({ success: false, message: "Failed to calculate balance" }, { status: 500 });
   }
 }

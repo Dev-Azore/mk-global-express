@@ -1,106 +1,213 @@
 import { NextResponse } from "next/server";
-import dbConnect, { collectionNamesObj } from "@/Lib/db.connect.js";
-import { ObjectId } from "mongodb";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/Lib/authOptions";
+import prisma from "@/Lib/prisma";
+import { z } from "zod";
+import { calculateDistance } from "@/Lib/googleMaps";
 
-// POST → insert new parcel booking
-export async function POST(req) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+// Validation schema for parcel booking
+const parcelSchema = z.object({
+  senderId: z.string().uuid("Invalid sender ID"),
+  pickupAddress: z.object({
+    street: z.string().min(5, "Street address required"),
+    lga: z.string().min(2, "LGA required"),
+    city: z.string().default("Kano"),
+    state: z.string().default("Kano"),
+    country: z.string().default("Nigeria"),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+  }),
+  dropoffAddress: z.object({
+    street: z.string().min(5, "Street address required"),
+    lga: z.string().min(2, "LGA required"),
+    city: z.string().default("Kano"),
+    state: z.string().default("Kano"),
+    country: z.string().default("Nigeria"),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+  }),
+  description: z.string().optional(),
+  weight: z.number().positive("Weight must be positive").optional(),
+});
 
-    const body = await req.json();
-    const collection = await dbConnect(
-      collectionNamesObj.bookingParcelsCollection
-    );
-
-    // Add timestamps
-    const now = new Date();
-    const parcelData = {
-      ...body,
-      userEmail: session.user.email,
-      createdAt: now,
-      date: now.getDate(),
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-      time: now.toLocaleTimeString("en-US", { hour12: true }),
-      status: "pending", // optional
-    };
-
-    const result = await collection.insertOne(parcelData);
-
-    return NextResponse.json(
-      { success: true, message: "Parcel booked successfully", result },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error inserting parcel:", error);
-    return NextResponse.json(
-      { success: false, message: "Something went wrong" },
-      { status: 500 }
-    );
-  }
+// Helper function to calculate distance using Google Maps API
+async function getDistance(pickup, dropoff) {
+  const result = await calculateDistance(pickup, dropoff);
+  return result.distance;
 }
 
-// GET → fetch all parcels
-export async function GET() {
-  try {
-    const collection = await dbConnect(
-      collectionNamesObj.bookingParcelsCollection
-    );
-    const parcels = await collection.find().toArray();
+// Helper function to calculate price based on distance
+function calculatePrice(distance, weight = 1) {
+  const basePrice = 500; // ₦500 base
+  const pricePerKm = 50; // ₦50 per km
+  const weightMultiplier = weight > 5 ? 1.5 : 1;
 
-    return NextResponse.json({ success: true, parcels });
-  } catch (error) {
-    console.error("Error fetching parcels:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch parcels" },
-      { status: 500 }
-    );
-  }
+  return Math.round((basePrice + (distance * pricePerKm)) * weightMultiplier);
 }
 
-// PATCH → update parcel booking (e.g. status)
-export async function PATCH(req) {
+export async function POST(request) {
   try {
-    const { id, status } = await req.json();
-    if (!id || !status) {
+    const body = await request.json();
+
+    // Validate input
+    const validation = parcelSchema.safeParse(body);
+
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, message: "id and status are required" },
+        {
+          success: false,
+          error: "Validation failed",
+          details: validation.error.errors
+        },
         { status: 400 }
       );
     }
 
-    const collection = await dbConnect(
-      collectionNamesObj.bookingParcelsCollection
-    );
+    const { senderId, pickupAddress, dropoffAddress, description, weight } = validation.data;
 
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { status } }
-    );
+    // Verify sender exists
+    const sender = await prisma.user.findUnique({
+      where: { id: senderId },
+    });
 
-    if (result.modifiedCount === 1) {
-      return NextResponse.json({
-        success: true,
-        message: "Parcel status updated",
-      });
+    if (!sender) {
+      return NextResponse.json(
+        { success: false, error: "Sender not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(
-      { success: false, message: "No parcel updated" },
-      { status: 400 }
-    );
+    // Calculate distance and price using Google Maps API
+    const distance = await getDistance(pickupAddress, dropoffAddress);
+    const price = calculatePrice(distance, weight);
+
+    // Generate tracking ID
+    const trackingId = `TR-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
+    // Create parcel
+    const parcel = await prisma.parcel.create({
+      data: {
+        trackingId,
+        senderId,
+        pickupAddress,
+        dropoffAddress,
+        description,
+        weight,
+        distance,
+        price,
+        status: "PENDING",
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      parcel,
+    });
   } catch (error) {
-    console.error("❌ Error updating parcel status:", error);
+    console.error("Booking error:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to update parcel status" },
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
+    const trackingId = searchParams.get("trackingId");
+
+    if (trackingId) {
+      // Get specific parcel by tracking ID
+      const parcel = await prisma.parcel.findUnique({
+        where: { trackingId },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          rider: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+              vehicleType: true,
+            },
+          },
+        },
+      });
+
+      if (!parcel) {
+        return NextResponse.json(
+          { success: false, error: "Parcel not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true, parcel });
+    }
+
+    if (userId) {
+      // Get all parcels for a user
+      const parcels = await prisma.parcel.findMany({
+        where: { senderId: userId },
+        include: {
+          rider: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      return NextResponse.json({ success: true, parcels });
+    }
+
+    // Get all parcels (admin only - should add auth check)
+    const parcels = await prisma.parcel.findMany({
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50, // Limit to 50 recent parcels
+    });
+
+    return NextResponse.json({ success: true, parcels });
+  } catch (error) {
+    console.error("Get parcels error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
