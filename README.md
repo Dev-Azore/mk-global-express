@@ -1,6 +1,7 @@
-# 🚚 Transify - Smart Logistics & Delivery Platform
+# 🚚 Mk-Global Express - Smart Logistics & Delivery Platform
 
-Transify is a modern, full-stack logistics and parcel delivery platform designed for speed, transparency, and reliability. Built with a focus on premium user experience and robust role-based management, it connects users, riders, and admins in a seamless delivery ecosystem.
+Mk-Global Express is a modern, full-stack logistics and parcel delivery platform designed for speed, transparency, and reliability. Built with a focus on premium user experience and robust role-based management, Join thousands of businesses that trust Mk-Global Express for their nationwide delivery needs.
+ystem.
 
 ## ✨ Core Features
 
@@ -62,8 +63,8 @@ Transify is a modern, full-stack logistics and parcel delivery platform designed
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/your-username/transify.git
-   cd transify
+   git clone https://github.com/your-username/mk-global-express.git
+   cd mk-global-express
    ```
 
 2. **Install Dependencies**:

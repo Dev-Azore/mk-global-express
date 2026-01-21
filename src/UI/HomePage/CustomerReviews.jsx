@@ -13,7 +13,7 @@ export default function CustomerReviews() {
       img: "https://randomuser.me/api/portraits/men/32.jpg",
       title: "Logistics made simple.",
       rating: 5,
-      desc: "Transify has completely transformed our supply chain. The real-time tracking and automated COD settlements are game-changers for any business operating in Nigeria.",
+      desc: "Mk-Global Express has completely transformed our supply chain. The real-time tracking and automated COD settlements are game-changers for any business operating in Nigeria.",
     },
     {
       id: 2,
@@ -22,7 +22,7 @@ export default function CustomerReviews() {
       img: "https://randomuser.me/api/portraits/women/45.jpg",
       title: "Reliable and Fast!",
       rating: 5,
-      desc: "I've tried several courier services, but Transify stands out for its professionalism. My customers receive their orders on time, and the support team is always helpful.",
+      desc: "I've tried several courier services, but Mk-Global Express stands out for its professionalism. My customers receive their orders on time, and the support team is always helpful.",
     },
     {
       id: 3,
@@ -31,7 +31,7 @@ export default function CustomerReviews() {
       img: "https://randomuser.me/api/portraits/men/76.jpg",
       title: "Highly Professional",
       rating: 5,
-      desc: "The integration process was seamless, and the rider network is extensive. We've seen a 30% increase in delivery success since switching to Transify's platform.",
+      desc: "The integration process was seamless, and the rider network is extensive. We've seen a 30% increase in delivery success since switching to Mk-Global Express's platform.",
     },
   ];
 
@@ -67,7 +67,7 @@ export default function CustomerReviews() {
                 <span className="text-red-500 italic">Partners Say.</span>
               </h2>
               <p className="text-xl text-slate-400 font-medium max-w-lg leading-relaxed">
-                Join thousands of businesses that trust Transify for their nationwide delivery needs.
+                Join thousands of businesses that trust Mk-Global Express for their nationwide delivery needs.
               </p>
             </motion.div>
 

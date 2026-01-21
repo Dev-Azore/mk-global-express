@@ -1,4 +1,4 @@
-// Google Maps API integration for Transify
+// Google Maps API integration for Mk-Global Express
 
 /**
  * Calculate distance between two addresses using Google Distance Matrix API

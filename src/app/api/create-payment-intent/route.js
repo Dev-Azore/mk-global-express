@@ -25,7 +25,7 @@ export async function POST(req) {
     amount = Math.round(Number(amount)); // make sure integer
 
     // Use session data, never trust client body for sensitive info
-    const parcelName = body.parcelName || "Transify Parcel Delivery";
+    const parcelName = body.parcelName || "Mk-Global Express Delivery";
     const senderName = session.user.name || "Transify Customer";
     const userId = session.user.id;
 
