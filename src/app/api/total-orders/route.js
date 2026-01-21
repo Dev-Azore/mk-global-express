@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/Lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/Lib/authOptions";
 
 // GET: fetch all orders
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT")) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
     const orders = await prisma.parcel.findMany({
       orderBy: {
         createdAt: 'desc'
@@ -44,6 +54,14 @@ export async function GET() {
 // PATCH: update order status
 export async function PATCH(req) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT")) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
     const { id, status } = await req.json();
 
     if (!id || !status) {

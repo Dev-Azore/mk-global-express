@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/Lib/prisma";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/Lib/authOptions";
 
 const supportSchema = z.object({
   name: z.string().min(2, "Name required"),
@@ -48,6 +50,14 @@ export async function POST(request) {
 // Get all support messages (Admin only)
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT")) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
     const messages = await prisma.supportMessage.findMany({
       orderBy: { createdAt: "desc" },
     });

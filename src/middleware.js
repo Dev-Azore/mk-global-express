@@ -6,43 +6,61 @@ export default withAuth(
         const token = req.nextauth.token;
         const path = req.nextUrl.pathname;
 
-        // 1. Unauthenticated users handling
-        if (!token) {
-            if (path.startsWith("/security-control")) {
-                return NextResponse.redirect(new URL("/security-control/login", req.url));
+        // 1. Redirect authenticated users away from ANY login page to their dashboard
+        const isAuthPage = path === "/login" || path === "/register" || path === "/security-control/login" || path === "/rider/login";
+
+        if (token && isAuthPage) {
+            const role = token.role?.toUpperCase();
+            if (role === "ADMIN" || role === "MERCHANT") {
+                return NextResponse.redirect(new URL("/security-control/admin", req.url));
+            } else if (role === "RIDER") {
+                return NextResponse.redirect(new URL("/dashboard/rider", req.url));
+            } else {
+                return NextResponse.redirect(new URL("/dashboard/user", req.url));
             }
-            if (path.startsWith("/dashboard/rider")) {
-                return NextResponse.redirect(new URL("/rider/login", req.url));
-            }
-            return NextResponse.redirect(new URL("/login", req.url));
         }
 
-        // 2. Role-based access control (RBAC)
-        // ADMIN/MERCHANT only area
-        if (path.startsWith("/security-control") && !path.includes("/login")) {
+        // 2. Unauthenticated users handling (Already handled by withAuth authorized callback for matcher)
+        // But we add specific logic for sub-paths if needed
+        if (!token) {
+            // withAuth will redirect to /login by default
+            return null;
+        }
+
+        // 3. Role-based access control (RBAC)
+        // ADMIN/MERCHANT only area (dashboard sub-paths)
+        if (path.startsWith("/security-control/")) {
             if (token.role !== "ADMIN" && token.role !== "MERCHANT") {
                 return NextResponse.redirect(new URL("/?error=unauthorized", req.url));
             }
         }
 
-        // RIDER only area
-        if (path.startsWith("/dashboard/rider")) {
+        // RIDER only area (dashboard sub-paths)
+        if (path.startsWith("/dashboard/rider/")) {
             if (token.role !== "RIDER") {
                 return NextResponse.redirect(new URL("/?error=unauthorized", req.url));
             }
-        }
-
-        // USER only area (or general dashboard)
-        if (path.startsWith("/dashboard/user") || path === "/dashboard") {
-            // All authenticated users can usually see the base dashboard or their specific user dashboard
-            // Add specific logic here if needed
         }
 
         return NextResponse.next();
     },
     {
         callbacks: {
-            authorized: ({ token }) => !!token,
+            authorized: ({ token, req }) => {
+                const path = req.nextUrl.pathname;
+                // Allow public access to login/register and base landing pages
+                if (
+                    path === "/login" ||
+                    path === "/register" ||
+                    path === "/security-control" ||
+                    path === "/security-control/login" ||
+                    path === "/rider" ||
+                    path === "/rider/login"
+                ) {
+                    return true;
+                }
+                return !!token;
+            },
         },
         pages: {
             signIn: "/login",

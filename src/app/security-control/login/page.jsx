@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
@@ -23,25 +23,26 @@ export default function AdminLoginPage() {
             });
 
             if (result?.error) {
-                setError("Invalid credentials or insufficient permissions");
+                setError("Invalid credentials. Access denied.");
                 setLoading(false);
                 return;
             }
 
-            // Verify admin role on client side (server will also check)
-            const res = await fetch("/api/auth/session");
-            const session = await res.json();
+            // Get fresh session to verify admin role
+            const session = await getSession();
 
             if (session?.user?.role !== "ADMIN" && session?.user?.role !== "MERCHANT") {
                 setError("Access denied. Admin privileges required.");
-                await signIn("credentials", { redirect: false }); // Sign out
                 setLoading(false);
                 return;
             }
 
-            router.push("/security-control");
+            // Sync and redirect
+            router.refresh();
+            router.replace("/security-control/admin");
+            setLoading(false);
         } catch (err) {
-            setError("An error occurred during login");
+            setError("A secure communication error occurred.");
             setLoading(false);
         }
     };

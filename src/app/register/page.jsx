@@ -38,7 +38,7 @@ const RegisterPage = () => {
     setErrors({});
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -48,12 +48,8 @@ const RegisterPage = () => {
 
       if (!response.ok) {
         if (data.details) {
-          // Handle validation errors
-          const errorObj = {};
-          data.details.forEach(err => {
-            errorObj[err.field] = err.message;
-          });
-          setErrors(errorObj);
+          // Handle validation errors from the new errorMap format
+          setErrors(data.details);
           toast.error("Please fix the errors in the form");
         } else {
           toast.error(data.error || "Registration failed");
@@ -237,10 +233,52 @@ const RegisterPage = () => {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-              <p className="mt-1 text-xs text-gray-500">
-                Must be 8+ characters with uppercase, lowercase, number, and special character
-              </p>
+
+              {/* Password Strength Meter */}
+              <div className="mt-3 space-y-2">
+                <div className="flex gap-1 h-1.5">
+                  {[1, 2, 3, 4].map((step) => {
+                    const password = formData.password;
+                    const hasUpper = /[A-Z]/.test(password);
+                    const hasLower = /[a-z]/.test(password);
+                    const hasNumber = /[0-9]/.test(password);
+                    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+                    const isLong = password.length >= 8;
+
+                    let strength = 0;
+                    if (isLong) strength++;
+                    if (hasUpper && hasLower) strength++;
+                    if (hasNumber) strength++;
+                    if (hasSpecial) strength++;
+
+                    const isActive = step <= strength;
+                    const colors = ["bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-500"];
+
+                    return (
+                      <div
+                        key={step}
+                        className={`flex-1 rounded-full transition-all duration-500 ${isActive ? colors[strength - 1] : "bg-gray-100"}`}
+                      ></div>
+                    );
+                  })}
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  {[
+                    { label: "8+ characters", met: formData.password.length >= 8 },
+                    { label: "Upper & Lowercase", met: /[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password) },
+                    { label: "At least one number", met: /[0-9]/.test(formData.password) },
+                    { label: "Special character", met: /[^A-Za-z0-9]/.test(formData.password) },
+                  ].map((req, i) => (
+                    <div key={i} className="flex items-center gap-1.5">
+                      <div className={`w-1.5 h-1.5 rounded-full ${req.met ? "bg-green-500" : "bg-gray-300"}`}></div>
+                      <span className={`text-[11px] ${req.met ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                        {req.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Confirm Password */}

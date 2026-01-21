@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, UserCheck, Users, Truck } from "lucide-react";
 import { FaBoxOpen, FaUserTie } from "react-icons/fa";
 import Link from "next/link";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, useSession, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -28,11 +29,11 @@ const LoginPage = () => {
         // Role-based default redirect
         const role = session.user.role?.toUpperCase();
         if (role === "ADMIN" || role === "MERCHANT") {
-          router.push("/security-control");
+          router.replace("/security-control");
         } else if (role === "RIDER") {
-          router.push("/dashboard/rider");
+          router.replace("/dashboard/rider");
         } else {
-          router.push("/dashboard");
+          router.replace("/dashboard/user");
         }
       }
     }
@@ -50,11 +51,31 @@ const LoginPage = () => {
     });
 
     if (result?.error) {
-      alert("Invalid credentials");
+      toast.error(result.error === "CredentialsSignin" ? "Invalid email or password" : result.error);
       setIsLoading(false);
     } else {
-      // Successful login - redirect to dashboard
-      router.push("/dashboard");
+      toast.success("Welcome back!");
+
+      // Get the fresh session to ensure we have the role for immediate redirect
+      const updatedSession = await getSession();
+
+      if (updatedSession?.user) {
+        const role = updatedSession.user.role?.toUpperCase();
+        if (callbackUrl && callbackUrl !== "/dashboard") {
+          router.replace(callbackUrl);
+        } else if (role === "ADMIN" || role === "MERCHANT") {
+          router.replace("/security-control/admin");
+        } else if (role === "RIDER") {
+          router.replace("/dashboard/rider");
+        } else {
+          router.replace("/dashboard/user");
+        }
+      } else {
+        router.refresh();
+        if (callbackUrl) router.replace(callbackUrl);
+      }
+
+      setIsLoading(false);
     }
   };
 
@@ -64,7 +85,7 @@ const LoginPage = () => {
       await signIn("google", { callbackUrl });
     } catch (error) {
       console.error("Google Sign In Error:", error);
-      alert("Google Login Failed: " + error.message);
+      toast.error("Google Login Failed. Please try again.");
     }
   };
 

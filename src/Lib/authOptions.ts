@@ -47,11 +47,16 @@ export const authOptions: AuthOptions = {
             return null;
           }
 
-          const email = credentials.email.toLowerCase().trim();
+          const identifier = credentials.email.toLowerCase().trim();
 
-          // Use Prisma to find user - optimized query
-          const user = await prisma.user.findUnique({
-            where: { email },
+          // Find user by email OR username
+          const user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: identifier },
+                { username: identifier }
+              ]
+            },
             select: {
               id: true,
               name: true,
@@ -100,10 +105,10 @@ export const authOptions: AuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 10 * 60, // 10 minutes
+    maxAge: 24 * 60 * 60, // 24 hours
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback_secret_for_local_dev_only_replace_in_production",
 
   callbacks: {
     async signIn({ user, account }) {

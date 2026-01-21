@@ -40,14 +40,20 @@ export async function POST(request) {
     const validation = registerSchema.safeParse(body);
 
     if (!validation.success) {
+      // Map Zod errors to a more user-friendly format
+      const errorMap = {};
+      validation.error.errors.forEach(err => {
+        const field = err.path[0];
+        if (!errorMap[field]) {
+          errorMap[field] = err.message;
+        }
+      });
+
       return NextResponse.json(
         {
           success: false,
           error: "Validation failed",
-          details: validation.error.errors.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          details: errorMap
         },
         { status: 400 }
       );

@@ -17,12 +17,48 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { href: "/", label: "Home", icon: <Home className="w-4 h-4" /> },
-    { href: "/coverage", label: "Coverage", icon: <MapPin className="w-4 h-4" /> },
-    { href: "/send-parcel", label: "Send Parcel", icon: <Package className="w-4 h-4" /> },
-    { href: "/be-a-rider", label: "Be a Rider", icon: <Bike className="w-4 h-4" /> },
-  ];
+  // Dynamic navigation links based on session
+  const getNavLinks = () => {
+    const baseLinks = [
+      { href: "/", label: "Home", icon: <Home className="w-4 h-4" /> },
+      { href: "/coverage", label: "Coverage", icon: <MapPin className="w-4 h-4" /> },
+    ];
+
+    if (!session) {
+      return [
+        ...baseLinks,
+        { href: "/send-parcel", label: "Send Parcel", icon: <Package className="w-4 h-4" /> },
+        { href: "/be-a-rider", label: "Be a Rider", icon: <Bike className="w-4 h-4" /> },
+      ];
+    }
+
+    const role = session.user.role?.toUpperCase();
+
+    if (role === "ADMIN" || role === "MERCHANT") {
+      return [
+        ...baseLinks,
+        { href: "/security-control/admin", label: "Control Panel", icon: <Package className="w-4 h-4" /> },
+        { href: "/security-control/admin/orders", label: "All Orders", icon: <Package className="w-4 h-4" /> },
+      ];
+    }
+
+    if (role === "RIDER") {
+      return [
+        ...baseLinks,
+        { href: "/dashboard/rider", label: "Rider Dashboard", icon: <Bike className="w-4 h-4" /> },
+        { href: "/dashboard/rider/deliveries", label: "Deliveries", icon: <Package className="w-4 h-4" /> },
+      ];
+    }
+
+    // Default USER role
+    return [
+      ...baseLinks,
+      { href: "/send-parcel", label: "Send Parcel", icon: <Package className="w-4 h-4" /> },
+      { href: "/dashboard/user", label: "My Orders", icon: <Package className="w-4 h-4" /> },
+    ];
+  };
+
+  const navLinks = getNavLinks();
 
   return (
     <>
@@ -104,7 +140,13 @@ export default function Navbar() {
                           <div className="text-sm text-gray-600 truncate">{session?.user?.email}</div>
                         </div>
                         <Link
-                          href="/dashboard"
+                          href={
+                            session.user.role === "ADMIN" || session.user.role === "MERCHANT"
+                              ? "/security-control/admin"
+                              : session.user.role === "RIDER"
+                                ? "/dashboard/rider"
+                                : "/dashboard/user"
+                          }
                           onClick={() => setIsUserDropdownOpen(false)}
                           className="block w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors font-medium border-b border-gray-100"
                         >

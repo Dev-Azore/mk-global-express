@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function RiderLoginPage() {
@@ -23,14 +23,13 @@ export default function RiderLoginPage() {
             });
 
             if (result?.error) {
-                setError("Invalid credentials");
+                setError("Invalid credentials. Please try again.");
                 setLoading(false);
                 return;
             }
 
-            // Verify rider role
-            const res = await fetch("/api/auth/session");
-            const session = await res.json();
+            // Get fresh session to verify role
+            const session = await getSession();
 
             if (session?.user?.role !== "RIDER") {
                 setError("Access denied. Rider account required.");
@@ -38,9 +37,12 @@ export default function RiderLoginPage() {
                 return;
             }
 
-            router.push("/dashboard/rider");
+            // Force session update and redirect
+            router.refresh();
+            router.replace("/dashboard/rider");
+            setLoading(false);
         } catch (err) {
-            setError("An error occurred during login");
+            setError("A communication error occurred.");
             setLoading(false);
         }
     };

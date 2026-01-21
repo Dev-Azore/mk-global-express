@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/Lib/authOptions";
 
 export async function POST(req) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock_key_for_build");
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock_key_for_build");
     const body = await req.json();
 
     // Ensure amount exists and convert to integer cents
@@ -17,15 +24,16 @@ export async function POST(req) {
 
     amount = Math.round(Number(amount)); // make sure integer
 
-    // Optional: add default metadata if missing
-    const parcelName = body.parcelName || "Unknown Parcel";
-    const senderName = body.senderName || "Unknown Sender";
+    // Use session data, never trust client body for sensitive info
+    const parcelName = body.parcelName || "Transify Parcel Delivery";
+    const senderName = session.user.name || "Transify Customer";
+    const userId = session.user.id;
 
     // Create Stripe PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount, // in cents
       currency: "ngn",
-      metadata: { parcelName, senderName },
+      metadata: { parcelName, senderName, userId },
     });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });

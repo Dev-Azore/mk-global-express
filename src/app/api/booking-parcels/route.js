@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/Lib/prisma";
 import { z } from "zod";
 import { calculateDistance } from "@/Lib/googleMaps";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/Lib/authOptions";
 
 // Validation schema for parcel booking
 const parcelSchema = z.object({
@@ -45,6 +47,12 @@ function calculatePrice(distance, weight = 1) {
 
 export async function POST(request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Validate input
@@ -61,7 +69,8 @@ export async function POST(request) {
       );
     }
 
-    const { senderId, pickupAddress, dropoffAddress, description, weight } = validation.data;
+    const { pickupAddress, dropoffAddress, description, weight } = validation.data;
+    const senderId = session.user.id; // ALWAYS use session id, never trust client body
 
     // Verify sender exists
     const sender = await prisma.user.findUnique({
@@ -121,6 +130,12 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
     const trackingId = searchParams.get("trackingId");
@@ -163,6 +178,11 @@ export async function GET(request) {
     }
 
     if (userId) {
+      // Security check: If not admin, can only see OWN parcels
+      if (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT" && session.user.id !== userId) {
+        return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+      }
+
       // Get all parcels for a user
       const parcels = await prisma.parcel.findMany({
         where: { senderId: userId },
@@ -186,7 +206,10 @@ export async function GET(request) {
       return NextResponse.json({ success: true, parcels });
     }
 
-    // Get all parcels (admin only - should add auth check)
+    // Get all parcels (admin only)
+    if (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT") {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
     const parcels = await prisma.parcel.findMany({
       include: {
         sender: {

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/Lib/prisma";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/Lib/authOptions";
 
 // Validation schema
 const riderApplicationSchema = z.object({
@@ -96,6 +98,15 @@ export async function POST(request) {
 // Get all rider applications (Admin only)
 export async function GET(request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT")) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status"); // "verified" or "pending"
 
@@ -145,6 +156,15 @@ export async function GET(request) {
 // Approve/Reject rider application (Admin only)
 export async function PATCH(request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT")) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
+
     const { riderId, action } = await request.json();
 
     if (!riderId || !action) {

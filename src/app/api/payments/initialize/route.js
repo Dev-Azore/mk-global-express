@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/Lib/prisma";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/Lib/authOptions";
 
 // Validation schema
 const paymentSchema = z.object({
@@ -46,6 +48,11 @@ async function initializePaymentPoint(amount, email, reference) {
 
 export async function POST(request) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await request.json();
 
         // Validate input
@@ -62,7 +69,8 @@ export async function POST(request) {
             );
         }
 
-        const { userId, amount, parcelId, type } = validation.data;
+        const { amount, parcelId, type } = validation.data;
+        const userId = session.user.id; // ALWAYS use session id
 
         // Verify user exists
         const user = await prisma.user.findUnique({
@@ -144,6 +152,11 @@ export async function POST(request) {
 // Get payment status
 export async function GET(request) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const reference = searchParams.get("reference");
         const userId = searchParams.get("userId");
@@ -176,10 +189,20 @@ export async function GET(request) {
                 );
             }
 
+            // Security check: only owner or admin can see specific payment
+            if (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT" && payment.userId !== session.user.id) {
+                return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+            }
+
             return NextResponse.json({ success: true, payment });
         }
 
         if (userId) {
+            // Security check: if not admin, can only see OWN payments
+            if (session.user.role !== "ADMIN" && session.user.role !== "MERCHANT" && session.user.id !== userId) {
+                return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+            }
+
             // Get all payments for a user
             const payments = await prisma.payment.findMany({
                 where: { userId },
