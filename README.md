@@ -1,136 +1,116 @@
-# 🚚 Mk-Global Express - Smart Logistics & Delivery Platform
+Mk-Global Express - Smart Logistics and Delivery Platform
 
-Mk-Global Express is a modern, full-stack logistics and parcel delivery platform designed for speed, transparency, and reliability. Built with a focus on premium user experience and robust role-based management, Join thousands of businesses that trust Mk-Global Express for their nationwide delivery needs.
-ystem.
+Mk-Global Express is a modern, full-stack logistics and parcel delivery platform designed for speed, transparency, and reliability. Built with a focus on premium user experience and robust role-based management, the platform enables businesses to manage nationwide delivery needs efficiently.
 
-## ✨ Core Features
+Core Features
+Landing Page
+Hero Experience: High-performance interface with optimized animations.
 
-### 🌐 Landing Page (Interactive & Dynamic)
+Service Overview: Detailed breakdown of delivery solutions.
 
-- **Hero Experience**: Captivating animations using Framer Motion.
-- **Service Mastery**: Detailed breakdown of delivery solutions.
-- **Nationwide Coverage**: Visualizing service reach across Bangladesh.
-- **Trust Indicators**: Real-time stats and verified customer reviews.
-- **Rider Recruitment**: Streamlined application flow for delivery partners.
+Coverage: Visualization of service reach.
 
-### 🛡️ Secure Dashboards (Role-Based)
+Trust Indicators: Real-time statistics and customer feedback.
 
-#### **👨‍💼 Admin Dashboard**
+Rider Recruitment: Streamlined application process for delivery partners.
 
-- **User Orchestration**: Manage accounts, roles, and platform access.
-- **Logistics Control**: Real-time overview of all parcels and delivery statuses.
-- **Financial Insights**: Monitor platform balance and transactions.
-- **Partner Management**: Review and approve rider applications.
-- **Configurable Settings**: Fine-tune platform parameters and zones.
+Role-Based Dashboards
+Admin Dashboard: Manage user accounts, platform access, real-time parcel tracking, financial insights, rider applications, and system configurations.
 
-#### **🏍️ Rider Dashboard**
+Rider Dashboard: Manage assigned deliveries, provide status updates, track performance, and access internal support.
 
-- **Job Nexus**: View and accept assigned deliveries.
-- **Status Updates**: Real-time tracking of delivery milestones.
-- **Performance History**: Track completed deliveries and earnings.
-- **Direct Support**: Integrated communication channel for assistance.
+User Dashboard: Instant parcel booking, secure Stripe payment processing, end-to-end live tracking, and profile management.
 
-#### **👤 User Dashboard**
+Tech Stack
+Frontend: Next.js 15+ (App Router), React 19
 
-- **Instant Booking**: Create parcels with a few clicks.
-- **Premium Payments**: Secure checkout experience powered by **Stripe**.
-- **Live Tracking**: End-to-end visibility of parcel journey.
-- **Personalized Space**: Manage profiles, delivery addresses, and notifications.
+Styling: Tailwind CSS, DaisyUI
 
-## 🚀 Tech Stack
+Animations: Framer Motion
 
-- **Frontend**: [Next.js 15+](https://nextjs.org/) (App Router), [React 19](https://reactjs.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/), [DaisyUI](https://daisyui.com/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/), [React Icons](https://react-icons.github.io/react-icons/)
-- **Backend**: [Next.js API Routes](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
-- **Database**: [MongoDB](https://www.mongodb.com/) (Native Driver)
-- **Authentication**: [NextAuth.js](https://next-auth.js.org/) (Credentials & Google OAuth)
-- **Payments**: [Stripe](https://stripe.com/)
-- **Charts**: [Recharts](https://recharts.org/)
-- **Notifications**: [React Hot Toast](https://react-hot-toast.com/), [SweetAlert2](https://sweetalert2.github.io/)
+Icons: Lucide React, React Icons
 
-## 🛠️ Getting Started
+Backend: Next.js API Routes
 
-### Prerequisites
+Database: MongoDB
 
-- Node.js 18.x or later
-- MongoDB Atlas account or local instance
-- Google Cloud Console project (for OAuth)
+Authentication: NextAuth.js (Credentials and Google OAuth)
 
-### Installation
+Payments: Stripe
 
-1. **Clone the Repository**:
+Data Visualization: Recharts
 
-   ```bash
-   git clone https://github.com/your-username/mk-global-express.git
-   cd mk-global-express
-   ```
+Notifications: React Hot Toast, SweetAlert2
 
-2. **Install Dependencies**:
+Getting Started
+Prerequisites
+Node.js 18.x or later
 
-   ```bash
-   npm install
-   ```
+MongoDB instance
 
-3. **Configure Environment Variables**:
-   Create a `.env.local` file in the root directory and add the following:
+Google Cloud Console project (for OAuth)
 
-   ```env
-   # Database
-   MONGODB_URI=your_mongodb_connection_string
+Installation
+Clone the repository:
 
-   # NextAuth
-   NEXTAUTH_URL=http://localhost:3000
-   NEXTAUTH_SECRET=your_nextauth_secret_key
+Bash
+git clone https://github.com/your-username/mk-global-express.git
+cd mk-global-express
+Install dependencies:
 
-   # Google OAuth
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
+Bash
+npm install
+Create a .env.local file in the root directory and configure the following variables:
 
-   # Stripe
-   STRIPE_PUBLIC_KEY=your_stripe_public_key
-   STRIPE_SECRET_KEY=your_stripe_secret_key
-   ```
+Code snippet
+MONGODB_URI=your_mongodb_connection_string
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret_key
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+STRIPE_PUBLIC_KEY=your_stripe_public_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+Start the development server:
 
-4. **Run Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to see the magic.
+Bash
+npm run dev
+Open http://localhost:3000 in your browser.
 
-## 📦 Deployment
+Deployment
+This project is optimized for deployment on Vercel.
 
-The project is optimized for **Vercel**.
+Push your code to a GitHub repository.
 
-1. Push your code to GitHub.
-2. Import the project into Vercel.
-3. Add the Environment Variables in the Vercel dashboard.
-4. Deploy!
+Import the project into Vercel.
 
-## 📜 Project Structure
+Add the required Environment Variables in the Vercel dashboard.
 
-```text
-src/
-├── app/               # Next.js App Router (Routes & Pages)
-├── Components/        # Reusable UI & Shared logic
-├── UI/                # Page-specific complex UI sections
-├── Lib/               # Core utilities, DB connection, Auth config
-├── contexts/          # React Context providers (Auth, Theme, etc.)
-├── assets/            # Static assets and images
-└── Providers/         # Global provider wrappers
-```
+Deploy.
 
-## 🤝 Contributing
+Project Structure
+src/app/: Next.js App Router (Routes and Pages)
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+src/Components/: Reusable UI and shared logic
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+src/UI/: Page-specific complex UI sections
 
----
+src/Lib/: Core utilities, database connection, and authentication configuration
+
+src/contexts/: React Context providers
+
+src/assets/: Static assets and images
+
+src/Providers/: Global provider wrappers
+
+Contributing
+Fork the project.
+
+Create your feature branch (git checkout -b feature/AmazingFeature).
+
+Commit your changes (git commit -m 'Add AmazingFeature').
+
+Push to the branch (git push origin feature/AmazingFeature).
+
+Open a pull request.
 
 Developed by Mustapha Yusuf Isma'il (Azore)
