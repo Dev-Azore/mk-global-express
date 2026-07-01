@@ -133,4 +133,4 @@ Contributions are what make the open source community such an amazing place to l
 
 ---
 
-Built with by [Khayer Hossain]
+Developed by Mustapha Yusuf Isma'il (Azore)
